@@ -34,7 +34,7 @@ class LocalisationCNN:
           cnn.add(Dense(64, activation='relu'))
           cnn.add(Dense(64, activation='relu'))
           cnn.add(Dense(64, activation='relu'))
-          cnn.add(Dense(units = 5, activation = 'sigmoid'))
+          cnn.add(Dense(units = 6, activation = 'softmax'))
       
           #Compiling the CNN
           cnn.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])  
@@ -104,5 +104,5 @@ class LocalisationCNN:
 
 LocalisationCNN = LocalisationCNN()
 LocalisationCNN.train_cnn(32, 10)
-LocalisationCNN.test_cnn()
+#LocalisationCNN.test_cnn()
  
