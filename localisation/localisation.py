@@ -70,10 +70,9 @@ class LocalisationCNN:
           cnn.save('localisation_cnn.h5') #creates a HDF5 file with the trained NN
           
       #Function to classify image on trained CNN    
-      def classify_image(self):
+      def classify_image(self, PepperImage):
           TrainedCnn = load_model('localisation_cnn.h5')
-          InputImage = image.load_img('dataset/test_set/Cantine/Cantine.1.jpg', target_size = (LocalisationCNN.IMGWIDTH, LocalisationCNN.IMGHEIGHT))
-          InputImage = image.img_to_array(InputImage)
+          InputImage = image.img_to_array(PepperImage)
           InputImage = np.expand_dims(InputImage, axis = 0)
           result = TrainedCnn.predict(InputImage)
           return result
