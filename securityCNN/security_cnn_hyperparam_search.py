@@ -56,7 +56,7 @@ def model(training_set, validation_set):
     
     convolution_design = {{choice(['one', 'two'])}}
     if convolution_design == 'one':
-        classifier.add(Conv2D(16, (3, 3), input_shape = (128, 128, 3)))
+        classifier.add(Conv2D({{choice([16, 32])}}, (3, 3), input_shape = (128, 128, 3)))
         #classifier.add(BatchNormalization())
         classifier.add(Activation('relu'))
         classifier.add(MaxPooling2D(pool_size = (2, 2)))
@@ -66,7 +66,7 @@ def model(training_set, validation_set):
         classifier.add(Activation('relu'))
         classifier.add(MaxPooling2D(pool_size = (2, 2)))
         
-        classifier.add(Conv2D(64, (7, 7)))
+        classifier.add(Conv2D(64, {{choice([(5, 5), (7, 7)])}}))
         #classifier.add(BatchNormalization())
         classifier.add(Activation('relu'))
         classifier.add(MaxPooling2D(pool_size = (2, 2)))
@@ -88,7 +88,7 @@ def model(training_set, validation_set):
         
         last_layer = {{choice(['yes', 'no'])}}
         if last_layer == 'yes':
-            classifier.add(Conv2D(64, (7, 7)))
+            classifier.add(Conv2D(64, {{choice([(5, 5), (7, 7)])}}))
             #classifier.add(BatchNormalization())
             classifier.add(Activation('relu'))
             classifier.add(MaxPooling2D(pool_size = (2, 2)))
@@ -114,11 +114,11 @@ def model(training_set, validation_set):
     
     history = classifier.fit_generator(training_set,
                              steps_per_epoch = 70,
-                             epochs = 1,
+                             epochs = 15,
                              validation_data = validation_set,
                              validation_steps = 70)
 
-    score, acc = classifier.evaluate_generator(validation_set, steps = 70)
+    score, acc = classifier.evaluate_generator(validation_set, steps = 100)
     print('Test accuracy:', acc)
     return {'loss': -acc, 'status': STATUS_OK, 'model': classifier}
 
@@ -129,8 +129,9 @@ def main():
     best_run, best_model = optim.minimize(model=model,
                                       data=data,
                                       algo=tpe.suggest,
-                                      max_evals=1,
+                                      max_evals=30,
                                       trials=Trials())
+    print(best_run)
 
 if __name__ == "__main__":
     main()
