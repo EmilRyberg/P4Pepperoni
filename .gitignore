@@ -1,4 +1,5 @@
 /localisation/dataset/*
 /securityCNN/dataset/*
-
+/securityCNN/DatasetOriginal/*
+/securityCNN/*.h5
 securityCNN/__pycache__/
