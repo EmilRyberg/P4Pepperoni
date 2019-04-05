@@ -28,12 +28,12 @@ def main(model_name):
 
         #Calling the predict method on model to predict 'me' on the image
         predictions = model.predict(img_array)
-        print ('Predictions: ', predictions)
+        #print ('Predictions: ', predictions)
         max_index = predictions.argmax(axis=1)
-        textStr = "Dangerous: {0}%, Liquid: {1}%, NonDangerous: {2}".format(predictions[0], 
-                                                                          predictions[1], 
-                                                                          predictions[2])
-        cv2.putText(frame, textStr, (10, 10), cv2.FONT_HERSHEY_SIMPLEX, 4, (0, 255, 0), 2, cv2.LINE_AA)
+        textStr = "Dangerous: {0:.2f}%, Liquid: {1:.2f}%, NonDangerous: {2:.2f}%".format(predictions[0,0]*100.0, 
+                                                                          predictions[0,1]*100.0, 
+                                                                          predictions[0,2]*100.0)
+        cv2.putText(frame, textStr, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2, cv2.LINE_AA)
 
         cv2.imshow("Capturing", frame)
         key=cv2.waitKey(1)
@@ -43,8 +43,8 @@ def main(model_name):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('model', metavar='N', type=str,
+    parser = argparse.ArgumentParser(description='Predicts on webcam')
+    parser.add_argument('model', type=str,
                        help='the model to use for detecting objects')
     
     args = parser.parse_args()
