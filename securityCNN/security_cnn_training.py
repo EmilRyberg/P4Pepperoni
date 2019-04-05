@@ -9,12 +9,19 @@ from keras.layers import Dense
 from keras.layers import Dropout
 from keras.preprocessing.image import ImageDataGenerator
 from keras import regularizers
+from keras.optimizers import Adam
 from sklearn.metrics import confusion_matrix
-from matplotlib import pyplot
+from matplotlib import pyplot as plt
 import numpy as np
 
+import tensorflow as tf
+from keras.backend import tensorflow_backend
+config = tf.ConfigProto(gpu_options=tf.GPUOptions(allow_growth=True))
+session = tf.Session(config=config)
+tensorflow_backend.set_session(session)
+
 classifier = Sequential()
-batch_size = 32
+batch_size = 64
 image_size = (160, 160)
 
 train_datagen = ImageDataGenerator(rescale=1./255,
@@ -47,54 +54,78 @@ test_set = test_datagen.flow_from_directory('dataset/test_set',
 confusion_m = np.zeros((3,3))
 
 def train_model():
-    classifier.add(Conv2D(64, (3, 3), input_shape = (160, 160, 3), activation  = 'relu'))
-    #classifier.add(BatchNormalization())
+    classifier.add(Conv2D(32, (3, 3), input_shape = (160, 160, 3)))
+    classifier.add(Activation('relu'))
+    classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
-    classifier.add(Conv2D(64, (3, 3), activation  = 'relu'))
-    #classifier.add(BatchNormalization())
+    classifier.add(Conv2D(64, (3, 3)))
+    classifier.add(Activation('relu'))
+    classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
-    classifier.add(Conv2D(128, (3, 3), activation  = 'relu'))
-    #classifier.add(BatchNormalization())
+    classifier.add(Conv2D(64, (3, 3)))
+    classifier.add(Activation('relu'))
+    classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
-    classifier.add(Conv2D(128, (3, 3), activation = 'relu'))
-    #classifier.add(BatchNormalization())
-    #classifier.add(Activation('relu'))
-    classifier.add(MaxPooling2D(pool_size = (2, 2)))
+#    classifier.add(Conv2D(64, (3, 3)))
+#    classifier.add(Activation('relu'))
+#    classifier.add(BatchNormalization())
+#    classifier.add(MaxPooling2D(pool_size = (2, 2)))
         
     # Step 3 - Flattening
     classifier.add(Flatten())
-    
+    classifier.add(Dropout(0.25))
     # Step 4 - Full connection
-    classifier.add(Dense(units = 2056, activation = 'relu')) 
-    #classifier.add(Dropout(0.2))
-    classifier.add(Dense(units = 2056, activation = 'relu')) 
+    classifier.add(Dense(units = 512, activation = 'relu')) 
+    classifier.add(Dropout(0.25))
+    classifier.add(Dense(units = 256, activation = 'relu')) 
+    classifier.add(Dropout(0.25))
+    #classifier.add(Dense(units = 1028 , activation = 'relu')) 
     #classifier.add(Dropout(0.2))
     classifier.add(Dense(units = 3, activation = 'softmax'))
     
+    adam_optimizer = Adam(lr=0.001)
+    
     # Compiling the CNN
-    classifier.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])
+    classifier.compile(optimizer = adam_optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
     classifier.summary()
     
     history = classifier.fit_generator(training_set,
                              steps_per_epoch = training_set.samples/batch_size,
-                             epochs = 100,
+                             epochs = 120,
                              validation_data = validation_set,
                              validation_steps = validation_set.samples/batch_size)
+    
+        # summarize history for accuracy
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    plt.show()
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'validation'], loc='upper left')
+    plt.show()
 
     score, acc = classifier.evaluate_generator(test_set, steps = test_set.samples/batch_size)
     print('Test accuracy:', acc)
-    classifier.save_weights('training2.h5')
-    classifier.save('model2.h5')
+    #classifier.save_weights('training2.h5')
+    classifier.save('model4.h5')
     
 def view_training_images():
     for X_batch, y_batch in training_set:
         for i in range(0, 8):
-            pyplot.subplot(330 + 1 + i)
-            pyplot.imshow(X_batch[i])
-        pyplot.show()
+            plt.subplot(330 + 1 + i)
+            plt.imshow(X_batch[i])
+        plt.show()
         break
 
 
@@ -112,7 +143,6 @@ def test_model(load_model_from_file = False, model_name = None):
         if (iteration - 1) >= steps:
             break
         print('Iteration ', iteration)
-        print('Images predicted: ', images_predicted)
         y_batch_predicted = np.zeros((current_batch_size, 1))
         for i in range(current_batch_size):
             images_predicted += 1
@@ -134,16 +164,17 @@ def test_model(load_model_from_file = False, model_name = None):
             y_predicted = np.concatenate((y_predicted, y_batch_predicted))
             
         iteration += 1
+        print('Images predicted: ', images_predicted)
     y_predicted = y_predicted.reshape((-1,)).astype(np.int32)
-    print("y_true: ", y_true)
-    print("y_predicted: ", y_predicted)
+    #print("y_true: ", y_true)
+    #print("y_predicted: ", y_predicted)
     print("Class labels: ", test_set.class_indices)
     global confusion_m
     confusion_m = confusion_matrix(y_true, y_predicted)
 
 def main():
-    test_model(load_model_from_file = True, model_name = 'model2.h5')
-    #train_model()
+    #test_model(load_model_from_file = True, model_name = 'knife-phone-headphones-liquid-91-83-83.h5')
+    train_model()
     
 if __name__ == "__main__":
     main()

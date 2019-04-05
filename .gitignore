@@ -3,3 +3,5 @@
 /securityCNN/DatasetOriginal/*
 /securityCNN/*.h5
 securityCNN/__pycache__/
+
+securityCNN/*.zip
