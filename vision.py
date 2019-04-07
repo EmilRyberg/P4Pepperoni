@@ -1,6 +1,7 @@
 import numpy as np
 from localisation import LocalisationCNN
 from EMILSPATH import EMILSCLASS
+from movementV1 import MovementClass
 
 class VisionModule:
       def classify_object(self, session):
@@ -45,13 +46,13 @@ class VisionModule:
       def find_localisation(self, session, localisation):
           result = -1
           while result != localisation:
-                # ADD GALA MOVEMENT ROTATE SLIGHTLY
+                MovementClass.looking_movem(5)
                 vid_service = session.service('ALVideoDevice')
                 # subscribe to the top camera
                 AL_kTopCamera = 0
                 AL_kVGA = 2  # 640x480
                 AL_kBGRColorSpace = 13
-                captureDevice = vid_service.subscribeCamera(
+                CaptureDevice = vid_service.subscribeCamera(
                     "vision", AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
 
                 # creating an empty image of size 640x480
@@ -60,17 +61,17 @@ class VisionModule:
                 image = np.zeros((height, width, 3), np.uint8)
 
                 # Getting an image
-                result = vid_service.getImageRemote(captureDevice)
+                PepperImage = vid_service.getImageRemote(CaptureDevice)
           
                 # Checking if result is empty or broken
-                if result == None:
+                if PepperImage == None:
                   print('cannot capture.')
-                elif result[6] == None:
+                elif PepperImage[6] == None:
                   print('no image data string.')
                 else:
                   # Not sure if below is useful, test.
                   #translate value to mat
-                  values = map(ord, str(bytearray(result[6])))
+                  values = map(ord, str(bytearray(PepperImage[6])))
                   # print(values) used for debugging
                   i = 0
                   for y in range(0, height):
