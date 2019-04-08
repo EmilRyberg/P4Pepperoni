@@ -45,7 +45,7 @@ class VisionModule:
             
       def find_localisation(self, session, localisation):
           result = -1
-          while result != localisation:
+          for x in range(0, 70): #Rotates 350 degrees while checking
                 MovementClass.looking_movem(5)
                 vid_service = session.service('ALVideoDevice')
                 # subscribe to the top camera
@@ -82,4 +82,6 @@ class VisionModule:
                           image.itemset((y, x, 2), values[i + 2])
                           i += 3
                   result = LocalisationCNN.classify_image(image)
-          return 1
+                  if result == localisation:
+                      return 1 #Returns one if location is found
+          return -1 #Returns -1 if location is not found
