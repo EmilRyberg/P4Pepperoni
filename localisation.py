@@ -7,7 +7,7 @@ from keras.layers import Flatten
 from keras.layers import Dense
 from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
-from resizeimage import resizeimage
+import cv2
 import numpy as np
 
 class LocalisationCNN:
@@ -73,7 +73,7 @@ class LocalisationCNN:
       #Function to classify image on trained CNN    
       def classify_image(self, PepperImage):
           TrainedCnn = load_model('localisation_cnn.h5')
-          InputImage = resizeimage.resize_width(LocalisationCNN.IMGWIDTH)
+          InputImage = cv2.resize(PepperImage, (LocalisationCNN.IMGWIDTH,LocalisationCNN.IMGHEIGHT))
           InputImage = image.img_to_array(PepperImage)
           InputImage = np.expand_dims(InputImage, axis = 0)
           result = TrainedCnn.predict(InputImage)
@@ -131,7 +131,7 @@ class LocalisationCNN:
           confusion_m = confusion_matrix(y_true, y_predicted)
 
 
-LocalisationCNN = LocalisationCNN()
+#LocalisationCNN = LocalisationCNN()
 #LocalisationCNN.train_cnn(32, 4)
-LocalisationCNN.test_cnn()
+#LocalisationCNN.test_cnn()
  

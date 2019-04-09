@@ -5,8 +5,9 @@ from localisation import LocalisationCNN
 def main():
     video = cv2.VideoCapture(0)
     while True:
-        _, frame = video.read()
-        
+        return_value, frame = video.read()
+        if not return_value:
+            continue
         img = Image.fromarray(frame, 'RGB')
         
         result = LocalisationCNN.classify_image(img)
@@ -28,8 +29,8 @@ def main():
         key=cv2.waitKey(1)
         if key == ord('q'):
             break
-        video.release()
-        cv2.destroyAllWindows()
+    video.release()
+    cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main()
