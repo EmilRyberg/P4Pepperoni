@@ -13,7 +13,7 @@ PEPPER_PORT = 9559
 class Movement(object):
     """Movement Module"""
     def __init__(self):
-        super(Movement, self).__init__()
+        #super(Movement, self).__init__()
         ALModule.__init__(self)
         """super makes the class inherit the methods from init and connects to ALModule
         TO REVISE"""
@@ -24,14 +24,27 @@ class Movement(object):
         self.motion_service = session.service("ALMotion")
         self.basic_awareness = session.service("ALBasicAwareness")
         self.auto_move = session.service("ALAutonomousLife")
+        self.engage = session.service("ALEngagementZones")
+        self.perception = session.service("ALPeoplePerception")
+        self.animation = session.service("ALAnimationPlayer")
+
 
         #Subscribe to Events
 
+        self.subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
+        self.subscriber.signal.connect(self.salute)
+        
+
         #List declaration (put here variables?)
+
+        #Stuff that might or might not be needed
+        #super(Movement, self).__init__()
+        #self.face_detection.subscribe("HumanGreeter")
+        #self.engage.subscribe("HumanGreeter")
     
     def looking_for(self, location):
 
-        loc_names=["toilets", "canteen","stair", "elevator"]
+        loc_names=["toilets", "canteen","stairs", "elevator"]
         self.tts.say("I will start looking for the" + loc_names[location])
         self.motion_service.wakeUp() #Set Stiffness on
 
@@ -62,7 +75,7 @@ class Movement(object):
         hand_open=["RHand", "LHand"]    
         joint_list=[["RWristYaw", "RShoulderPitch", "RShoulderRoll"], ["LWristYaw", "LShoulderPtich", "LShoulderRoll"]]
         angle_list=[["""toiletangles"""], [[-0.87],[-0.06], [0.24]], ["""stairsangles"""], ["""elevatorangles"""]]
-        loc_names=["toilets", "canteen","stair", "elevator"]
+        loc_names=["toilets", "canteen","stairs", "elevator"]
 
         #Set times and stiffness
         joint_times=[[1.0], [2.0], [2.0]]
@@ -85,6 +98,13 @@ class Movement(object):
 
         #Restart Autonomous life MAYBE?
         self.auto_move.setAutonomousAbilityEnabled("All",True)
+
+    def salute(self, id):
+        print id
+        self.tts.say("Hello there!")
+        self.animation.run("animations/Stand/Gestures/Hey_1")
+        self.memory.unsubscribe("EngagementZones/PersonEnteredZone1")
+
 
 if __name__=="__main__":
     """myBroker = ALBroker("myBroker",
