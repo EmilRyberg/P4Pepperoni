@@ -1,22 +1,25 @@
 import cv2
 from PIL import Image
 from localisation import LocalisationCNN
+import numpy as np
 
 def main():
     video = cv2.VideoCapture(0)
+    cnn = LocalisationCNN()
+    
     while True:
         return_value, frame = video.read()
         if not return_value:
             continue
         img = Image.fromarray(frame, 'RGB')
         
-        result = LocalisationCNN.classify_image(img)
+        result = cnn.classify_image(img)
         
-        #0=Cantine, 1=Elavators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
+        #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
         if result == 0:
             print('cantine found')
         elif result == 1:
-            print('elavators found')
+            print('elevators found')
         elif result == 2:
             print('exit found')
         elif result == 4:

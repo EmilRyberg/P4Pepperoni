@@ -9,11 +9,16 @@ from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
 import cv2
 import numpy as np
+from PIL import Image
 
 class LocalisationCNN:
       #Desired image sizes used by ImageDataGenerator under training
       IMGWIDTH = 128
       IMGHEIGHT = 96
+      trained_cnn = None
+      
+      def __init__(self):
+          self.trained_cnn = load_model('localisation/localisation_cnn.h5')
       
       # Building the CNN
       def build_cnn(self, ImgWidth, ImgHeight):
@@ -71,22 +76,21 @@ class LocalisationCNN:
           cnn.save('localisation_cnn.h5') #creates a HDF5 file with the trained NN
           
       #Function to classify image on trained CNN    
-      def classify_image(self, PepperImage):
-          TrainedCnn = load_model('localisation_cnn.h5')
-          InputImage = cv2.resize(PepperImage, (LocalisationCNN.IMGWIDTH,LocalisationCNN.IMGHEIGHT))
-          InputImage = image.img_to_array(PepperImage)
-          InputImage = np.expand_dims(InputImage, axis = 0)
-          result = TrainedCnn.predict(InputImage)
-          return result
-          #0=Cantine, 1=Elavators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
+      def classify_image(self, pepper_image):
+        img = pepper_image.resize((self.IMGHEIGHT,self.IMGWIDTH))
+        img_array = np.array(img)
+        img_array = np.expand_dims(img_array, axis=0)
+        result = self.trained_cnn.predict_classes(img_array)
+        return result
+        #0=Cantine, 1=Elavators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
         
       #Function for testing the trained CNN  
       def test_cnn(self):
           from sklearn.metrics import confusion_matrix
-          TrainedCnn = load_model('localisation_cnn.h5')
+          self.trained_cnn = load_model('localisation_cnn.h5')
           test_datagen = ImageDataGenerator(rescale = 1./255)
           test_set = test_datagen.flow_from_directory('dataset/test_set',
-                                        target_size = (LocalisationCNN.IMGWIDTH, LocalisationCNN.IMGHEIGHT),
+                                        target_size = (self.IMGWIDTH, self.IMGHEIGHT),
                                         batch_size = 32,
                                         shuffle=False,
                                         class_mode = 'categorical') 
@@ -105,7 +109,7 @@ class LocalisationCNN:
               for i in range(current_batch_size):
                     images_predicted += 1
                     image_to_predict = X_batch[i].reshape(1, X_batch[i].shape[0], X_batch[i].shape[1], X_batch[i].shape[2])
-                    prediction = TrainedCnn.predict_classes(image_to_predict)
+                    prediction = self.trained_cnn.predict_classes(image_to_predict)
                     y_batch_predicted[i,0] = prediction
                     prediction_class_name = None
                     for key, value in test_set.class_indices.items():
