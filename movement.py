@@ -9,6 +9,8 @@ import time
 PEPPER_IP = "192.168.1.15"
 
 PEPPER_PORT = 9559
+loc_names=["toilets", "canteen","stairs", "elevator", "exit"]
+location = 1 #TO BE CHANGED. just so that my compiler doesnt scream
 
 class Movement(object):
     """Movement Module"""
@@ -42,27 +44,37 @@ class Movement(object):
         #self.face_detection.subscribe("HumanGreeter")
         #self.engage.subscribe("HumanGreeter")
     
-    def looking_for(self, location):
+    def looking_for(self, location, cnn_working):
 
-        loc_names=["toilets", "canteen","stairs", "elevator"]
+        self.auto_move.setAutonomousAbilityEnabled("All",False, async = True)
+        self.motion_service.setAngles("HeadYaw", 0, 0.1, async = True)
+        self.motion_service.setAngles("HeadPitch", 0, 0.1, async = True)
+        self.motion_service.moveTo(0,0, -3.14/2,2)
+        
+
+        position_vector1 = self.motion_service.getRobotPosition(True)
+
         self.tts.say("I will start looking for the" + loc_names[location])
-        self.motion_service.wakeUp() #Set Stiffness on
+
+        cnn_working = True #For now
 
 
-        name = "HeadYaw"
-        head_angle = [0, 1, 0, -1, 0]
-        head_times = [2.0, 4.0, 6.0, 8.0, 10.0]
-        is_absolute = False
-        #If true, the movement is described in absolute angles, else the angles are relative to the current angle.
+        while cnn_working:
+            self.auto_move.setAutonomousAbilityEnabled("All",False)
+            self.motion_service.moveTo(0,0, 0.087, 0.5) #x, y, rotz and time to reach to that position
+            position_vector2 = self.motion_service.getRobotPosition(True)
 
-    
-        self.basic_awareness.setEnabled(False)
-        self.motion_service.setAngles("HeadPitch", -0.2, 0.1)
-        self.motion_service.setAngles("HeadYaw", 0, 0.1)
-        self.motion_service.angleInterpolation(name, head_angle, head_times, is_absolute)
-        time.sleep(2)
-        self.basic_awareness.setEnabled(True) #Maybe?
-        #call vision module?
+            diff = position_vector2[2]-position_vector1[2]
+            angle_range = abs(diff) 
+        
+            if angle_range>=3.14 and cnn_working: #180degrees from initial position
+                self.tts.say("sorry, I couldn't find the "+ loc_names[location] )
+                time.sleep(1)
+                self.auto_move.setAutonomousAbilityEnabled("All",True)
+                cnn_working = False
+                #break, call next function, up to main controller
+        
+
     
     def point_at(self, location, direction):
 
@@ -130,3 +142,4 @@ if __name__=="__main__":
 
 
 
+#Previous functions (JUST IN CASE)
