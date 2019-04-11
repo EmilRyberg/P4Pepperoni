@@ -10,6 +10,7 @@ from keras.preprocessing.image import ImageDataGenerator
 import cv2
 import numpy as np
 from PIL import Image
+from matplotlib import pyplot as plt
 
 class LocalisationCNN:
       #Desired image sizes used by ImageDataGenerator under training
@@ -18,7 +19,7 @@ class LocalisationCNN:
       trained_cnn = None
       
       def __init__(self):
-          self.trained_cnn = load_model('localisation/localisation_cnn.h5')
+          self.trained_cnn = load_model('localisation_cnn.h5')
       
       # Building the CNN
       def build_cnn(self, ImgWidth, ImgHeight):
@@ -51,8 +52,7 @@ class LocalisationCNN:
       def train_cnn(self, bs, epochs):
           train_datagen = ImageDataGenerator(rescale = 1./255,
                                          shear_range = 0.2,
-                                         zoom_range = 0.2,
-                                         horizontal_flip = True)
+                                         zoom_range = 0.2)
           
           validation_datagen = ImageDataGenerator(rescale = 1./255)
       
@@ -67,11 +67,27 @@ class LocalisationCNN:
                                                    class_mode = 'categorical')
       
           cnn = LocalisationCNN.build_cnn(LocalisationCNN.IMGWIDTH, LocalisationCNN.IMGHEIGHT)
-          cnn.fit_generator(training_set,
+          history = cnn.fit_generator(training_set,
                                    steps_per_epoch = training_set.samples/bs,
                                    epochs = epochs,
                                    validation_data = validation_set,
                                    validation_steps = validation_set.samples/bs)
+                  # summarize history for accuracy
+          plt.plot(history.history['acc'])
+          plt.plot(history.history['val_acc'])
+          plt.title('model accuracy')
+          plt.ylabel('accuracy')
+          plt.xlabel('epoch')
+          plt.legend(['train', 'validation'], loc='upper left')
+          plt.show()
+          # summarize history for loss
+          plt.plot(history.history['loss'])
+          plt.plot(history.history['val_loss'])
+          plt.title('model loss')
+          plt.ylabel('loss')
+          plt.xlabel('epoch')
+          plt.legend(['train', 'validation'], loc='upper left')
+          plt.show()
           
           cnn.save('localisation_cnn.h5') #creates a HDF5 file with the trained NN
           
@@ -135,7 +151,7 @@ class LocalisationCNN:
           confusion_m = confusion_matrix(y_true, y_predicted)
 
 
-#LocalisationCNN = LocalisationCNN()
-#LocalisationCNN.train_cnn(32, 4)
+LocalisationCNN = LocalisationCNN()
+LocalisationCNN.train_cnn(32, 10)
 #LocalisationCNN.test_cnn()
  
