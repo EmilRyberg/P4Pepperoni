@@ -10,8 +10,9 @@ from naoqi import ALModule
 PEPPER_IP="pepper.local"
 PEPPER_PORT=9559
 
-dataWord=[]
+asr_speech_question=empty
 asr_speech_localization=empty
+asr_speech_security=empty
 
 # Speech recognition
 class SpeechRecognition(object):
@@ -39,21 +40,29 @@ class SpeechRecognition(object):
               print("Data: %s" % dataWord)
 
               # Setting the vocabulary
-              vocabulary=["can you hear me"]
+              vocabulary=["can you help me find", "can this go thorugh security"]
               self.asr.pause(True)
               self.asr.setVocabulary(vocabulary, False)
               self.asr.pause(False)
 
               #Start the speech recognition engine
-              self.asr.subscribe("Subscribe_Name")
+              self.asr.subscribe("Speech_Question")
               print("Speech recog is running")
               time.sleep(10)
 
               self.asr.pause(False)
-              self.asr.unsubscribe("Subscribe_Name")
+              self.asr.unsubscribe("Speech_Question")
 
-              dataWord=self.proxy.getData("WordRecognized")
-              print("Data: %s" % dataWord)
+              asr_speech_question=self.proxy.getData("WordRecognized")
+              print("Data: %s" % asr_speech_question)
+
+              if asr_speech_question[0] == 'can you help me find':
+                  self.tts.say("What do you want me to find?")
+              elif asr_speech_question[0] == 'can this go through security':
+                  self.tts.say("Show me the object, and i will tell you")
+              else:
+                  self.tts.say("Sorry, I do not know that question")
+
               self.asr.pause(True)
               self.asr.removeAllContext()
 
@@ -74,20 +83,51 @@ class SpeechRecognition(object):
 
               if asr_speech_localization[0] == 'stairs':
                      self.tts.say("Ok, I will find the stairs")
+
               elif asr_speech_localization[0] == 'bathroom':
                      self.tts.say("Ok, I will find the bathroom")
+
               elif asr_speech_localization[0] == 'exit':
                      self.tts.say("Ok, I will find the exit")
+
               elif asr_speech_localization[0] == 'canteen':
                      self.tts.say("Ok, I will find the canteen")
+
               elif asr_speech_localization[0] == 'elevator':
                      self.tts.say("Ok, I will find the elevator")
+
               else:
                      self.tts.say("Sorry, I do not know that location")
 
               self.asr.pause(True)
               self.asr.removeAllContext()
+              
+       def speech_object_security(self):
 
+              self.asr.pause(True)
+              self.asr.removeAllContext()
+              vocabulary_localization=["can i bring this through security", "is this safe", "can i take this through security"]
+              self.asr.setVocabulary(vocabulary_localization, False)
+              self.asr.pause(False)
+
+              self.asr.subscribe("Speech_Security")
+              print("Speechrecog is running")
+              time.sleep(5)
+              self.asr.unsubscribe("Speech_Security")
+              asr_speech_security=self.proxy.getData("WordRecognized")
+              print("Localization: %s" % asr_speech_security)
+
+              if asr_speech_localization[0] == 'can i bring this through security':
+                     self.tts.say("I will check the object")
+              elif asr_speech_localization[0] == 'is this safe':
+                     self.tts.say("I will check the object")
+              elif asr_speech_localization[0] == 'can i take this through security':
+                     self.tts.say("I will check the object")
+              else:
+                     self.tts.say("Sorry, I do not know that location")
+
+              self.asr.pause(True)
+              self.asr.removeAllContext()
 
 def main():
        obj=SpeechRecognition()
