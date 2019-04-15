@@ -21,7 +21,7 @@ session = tf.Session(config=config)
 tensorflow_backend.set_session(session)
 
 classifier = Sequential()
-batch_size = 64
+batch_size = 50
 image_size = (160, 160)
 
 train_datagen = ImageDataGenerator(rescale=1./255,
@@ -56,35 +56,33 @@ confusion_m = np.zeros((3,3))
 def train_model():
     classifier.add(Conv2D(32, (3, 3), input_shape = (160, 160, 3)))
     classifier.add(Activation('relu'))
-    classifier.add(BatchNormalization())
+    classifier.add(Conv2D(32, (3, 3)))
+    classifier.add(Activation('relu'))
+    #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(64, (3, 3)))
     classifier.add(Activation('relu'))
-    classifier.add(BatchNormalization())
+    classifier.add(Conv2D(64, (3, 3)))
+    classifier.add(Activation('relu'))
+    #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(64, (3, 3)))
     classifier.add(Activation('relu'))
-    classifier.add(BatchNormalization())
+    #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
-    
-#    classifier.add(Conv2D(64, (3, 3)))
-#    classifier.add(Activation('relu'))
-#    classifier.add(BatchNormalization())
-#    classifier.add(MaxPooling2D(pool_size = (2, 2)))
         
     # Step 3 - Flattening
     classifier.add(Flatten())
-    classifier.add(Dropout(0.25))
+    #classifier.add(Dropout(0.25))
     # Step 4 - Full connection
     classifier.add(Dense(units = 512, activation = 'relu')) 
-    classifier.add(Dropout(0.25))
-    classifier.add(Dense(units = 256, activation = 'relu')) 
-    classifier.add(Dropout(0.25))
-    #classifier.add(Dense(units = 1028 , activation = 'relu')) 
-    #classifier.add(Dropout(0.2))
-    classifier.add(Dense(units = 3, activation = 'softmax'))
+    #classifier.add(Dropout(0.25))
+    classifier.add(Dense(units = 512, activation = 'relu')) 
+    classifier.add(Dense(units = 512, activation = 'relu')) 
+    #classifier.add(Dropout(0.25))
+    classifier.add(Dense(units = 4, activation = 'softmax'))
     
     adam_optimizer = Adam(lr=0.001)
     
@@ -94,7 +92,7 @@ def train_model():
     
     history = classifier.fit_generator(training_set,
                              steps_per_epoch = training_set.samples/batch_size,
-                             epochs = 120,
+                             epochs = 30,
                              validation_data = validation_set,
                              validation_steps = validation_set.samples/batch_size)
     
@@ -118,7 +116,7 @@ def train_model():
     score, acc = classifier.evaluate_generator(test_set, steps = test_set.samples/batch_size)
     print('Test accuracy:', acc)
     #classifier.save_weights('training2.h5')
-    classifier.save('model4.h5')
+    classifier.save('model7.h5')
     
 def view_training_images():
     for X_batch, y_batch in training_set:
@@ -150,10 +148,17 @@ def test_model(load_model_from_file = False, model_name = None):
             prediction = classifier.predict_classes(image_to_predict)
             y_batch_predicted[i,0] = prediction
             prediction_class_name = None
+            true_class_name = None
             for key, value in test_set.class_indices.items():
                 if (value == prediction):
                     prediction_class_name = key
-                    break
+                elif (value == y_batch[i].argmax()):
+                    true_class_name = key
+                    
+            if (prediction != y_batch[i].argmax()):
+                plt.imshow(X_batch[i])
+                plt.title("P: {0}, T: {1}".format(prediction_class_name, true_class_name))
+                plt.show()
             #print(prediction_class_name)
         if (is_first_iter):
             y_true = y_batch.argmax(axis=1)
@@ -173,8 +178,8 @@ def test_model(load_model_from_file = False, model_name = None):
     confusion_m = confusion_matrix(y_true, y_predicted)
 
 def main():
-    #test_model(load_model_from_file = True, model_name = 'knife-phone-headphones-liquid-91-83-83.h5')
-    train_model()
+    test_model(load_model_from_file = True, model_name = 'model7.h5')
+    #train_model()
     
 if __name__ == "__main__":
     main()
