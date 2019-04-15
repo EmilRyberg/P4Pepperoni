@@ -12,13 +12,14 @@ PEPPER_PORT = 9559
 loc_names=["toilets", "canteen","stairs", "elevator", "exit"]
 location = 1 #TO BE CHANGED. just so that my compiler doesnt scream
 
-class Movement(object):
+class Movement(session):
     """Movement Module"""
-    def __init__(self):
+    def __init__(self, session):
         #super(Movement, self).__init__()
-        ALModule.__init__(self)
+        #ALModule.__init__(self)
         """super makes the class inherit the methods from init and connects to ALModule
         TO REVISE"""
+        self.session= session
 
         #Create services
         self.memory = session.service("ALMemory")
@@ -44,35 +45,24 @@ class Movement(object):
         #self.face_detection.subscribe("HumanGreeter")
         #self.engage.subscribe("HumanGreeter")
     
-    def looking_for(self, location, cnn_working):
+    def start_looking(self, location, cnn_working):
 
         self.auto_move.setAutonomousAbilityEnabled("All",False, async = True)
         self.motion_service.setAngles("HeadYaw", 0, 0.1, async = True)
         self.motion_service.setAngles("HeadPitch", 0, 0.1, async = True)
         self.motion_service.moveTo(0,0, -3.14/2,2)
+
+    def turn(self, rotz, speed):
+
+        timing = speed*rotz
+        self.auto_move.setAutonomousAbilityEnabled("All",False)
+        self.motion_service.moveTo(0,0, rotz, timing) #x, y, rotz and time to reach to that position
         
 
-        position_vector1 = self.motion_service.getRobotPosition(True)
+    def end_looking(self):
+        self.position_vector = self.motion_service.getRobotPosition(True)
+        self.auto_move.setAutonomousAbilityEnabled("All",True)
 
-        self.tts.say("I will start looking for the" + loc_names[location])
-
-        cnn_working = True #For now
-
-
-        while cnn_working:
-            self.auto_move.setAutonomousAbilityEnabled("All",False)
-            self.motion_service.moveTo(0,0, 0.087, 0.5) #x, y, rotz and time to reach to that position
-            position_vector2 = self.motion_service.getRobotPosition(True)
-
-            diff = position_vector2[2]-position_vector1[2]
-            angle_range = abs(diff) 
-        
-            if angle_range>=3.14 and cnn_working: #180degrees from initial position
-                self.tts.say("sorry, I couldn't find the "+ loc_names[location] )
-                time.sleep(1)
-                self.auto_move.setAutonomousAbilityEnabled("All",True)
-                cnn_working = False
-                #break, call next function, up to main controller
         
 
     
