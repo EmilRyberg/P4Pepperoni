@@ -18,8 +18,8 @@ class LocalisationCNN:
       IMGHEIGHT = 96
       trained_cnn = None
       
-      def __init__(self):
-          self.trained_cnn = load_model('localisation_cnn.h5')
+#      def __init__(self):
+#          self.trained_cnn = load_model('localisation_cnn.h5')
       
       # Building the CNN
       def build_cnn(self, ImgWidth, ImgHeight):
@@ -56,17 +56,17 @@ class LocalisationCNN:
           
           validation_datagen = ImageDataGenerator(rescale = 1./255)
       
-          training_set = train_datagen.flow_from_directory('localisation/dataset/training_set',
+          training_set = train_datagen.flow_from_directory('dataset/training_set',
                                                        target_size = (LocalisationCNN.IMGHEIGHT, LocalisationCNN.IMGWIDTH),
                                                        batch_size = 32,
                                                        class_mode = 'categorical')
           
-          validation_set = validation_datagen.flow_from_directory('localisation/dataset/validation_set',
+          validation_set = validation_datagen.flow_from_directory('dataset/validation_set',
                                                    target_size = (LocalisationCNN.IMGHEIGHT, LocalisationCNN.IMGWIDTH),
                                                    batch_size = 32,
                                                    class_mode = 'categorical')
       
-          cnn = LocalisationCNN.build_cnn(LocalisationCNN.IMGHEIGHT, LocalisationCNN.IMGWIDTH)
+          cnn = LocalisationCNN.build_cnn(LocalisationCNN.IMGWIDTH, LocalisationCNN.IMGHEIGHT)
           history = cnn.fit_generator(training_set,
                                    steps_per_epoch = training_set.samples/bs,
                                    epochs = epochs,
@@ -105,7 +105,7 @@ class LocalisationCNN:
           from sklearn.metrics import confusion_matrix
           self.trained_cnn = load_model('localisation_cnn.h5')
           test_datagen = ImageDataGenerator(rescale = 1./255)
-          test_set = test_datagen.flow_from_directory('localisation/dataset/test_set',
+          test_set = test_datagen.flow_from_directory('dataset/test_set',
                                         target_size = (self.IMGHEIGHT, self.IMGWIDTH),
                                         batch_size = 32,
                                         shuffle=False,
