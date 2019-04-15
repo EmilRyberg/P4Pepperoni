@@ -57,16 +57,16 @@ class LocalisationCNN:
           validation_datagen = ImageDataGenerator(rescale = 1./255)
       
           training_set = train_datagen.flow_from_directory('dataset/training_set',
-                                                       target_size = (LocalisationCNN.IMGHEIGHT, LocalisationCNN.IMGWIDTH),
+                                                       target_size = (self.IMGHEIGHT, self.IMGWIDTH),
                                                        batch_size = 32,
                                                        class_mode = 'categorical')
           
           validation_set = validation_datagen.flow_from_directory('dataset/validation_set',
-                                                   target_size = (LocalisationCNN.IMGHEIGHT, LocalisationCNN.IMGWIDTH),
+                                                   target_size = (self.IMGHEIGHT, self.IMGWIDTH),
                                                    batch_size = 32,
                                                    class_mode = 'categorical')
       
-          cnn = LocalisationCNN.build_cnn(LocalisationCNN.IMGWIDTH, LocalisationCNN.IMGHEIGHT)
+          cnn = self.build_cnn(self.IMGWIDTH, self.IMGHEIGHT)
           history = cnn.fit_generator(training_set,
                                    steps_per_epoch = training_set.samples/bs,
                                    epochs = epochs,
