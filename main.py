@@ -33,7 +33,7 @@ class Controller(object):
         start = time.time()
         done = False
         timeout = False
-        while not done or not timeout:
+        while not done and not timeout:
             self.audio_result = audio.listen()
             if self.audio_result == "nothing":
                 self.done = True
