@@ -21,6 +21,7 @@ def main(model_name):
 
         img = img.resize((160,160))
         img_array = np.array(img)
+        img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
 
         #Our keras model used a 4D tensor, (images x height x width x channel)
         #So changing dimension 128x128x3 into 1x128x128x3 
