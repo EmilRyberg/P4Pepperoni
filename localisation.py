@@ -26,7 +26,7 @@ class LocalisationCNN:
           #Initialising the CNN
           cnn = Sequential()
           #First Conv+Pool layer
-          cnn.add(Conv2D(32, (3, 3), input_shape = (ImgWidth, ImgHeight, 3), activation = 'relu'))
+          cnn.add(Conv2D(32, (3, 3), input_shape = (ImgHeight, ImgWidth, 3), activation = 'relu'))
           cnn.add(MaxPooling2D(pool_size = (2, 2)))
           #Second Conv+Pool layer
           cnn.add(Conv2D(32, (3, 3), activation = 'relu'))
@@ -56,17 +56,17 @@ class LocalisationCNN:
           
           validation_datagen = ImageDataGenerator(rescale = 1./255)
       
-          training_set = train_datagen.flow_from_directory('dataset/training_set',
-                                                       target_size = (LocalisationCNN.IMGWIDTH, LocalisationCNN.IMGHEIGHT),
+          training_set = train_datagen.flow_from_directory('localisation/dataset/training_set',
+                                                       target_size = (LocalisationCNN.IMGHEIGHT, LocalisationCNN.IMGWIDTH),
                                                        batch_size = 32,
                                                        class_mode = 'categorical')
           
-          validation_set = validation_datagen.flow_from_directory('dataset/validation_set',
-                                                   target_size = (LocalisationCNN.IMGWIDTH, LocalisationCNN.IMGHEIGHT),
+          validation_set = validation_datagen.flow_from_directory('localisation/dataset/validation_set',
+                                                   target_size = (LocalisationCNN.IMGHEIGHT, LocalisationCNN.IMGWIDTH),
                                                    batch_size = 32,
                                                    class_mode = 'categorical')
       
-          cnn = LocalisationCNN.build_cnn(LocalisationCNN.IMGWIDTH, LocalisationCNN.IMGHEIGHT)
+          cnn = LocalisationCNN.build_cnn(LocalisationCNN.IMGHEIGHT, LocalisationCNN.IMGWIDTH)
           history = cnn.fit_generator(training_set,
                                    steps_per_epoch = training_set.samples/bs,
                                    epochs = epochs,
@@ -93,7 +93,7 @@ class LocalisationCNN:
           
       #Function to classify image on trained CNN    
       def classify_image(self, pepper_image):
-        img = pepper_image.resize((self.IMGHEIGHT,self.IMGWIDTH))
+        img = pepper_image.resize((self.IMGWIDTH,self.IMGHEIGHT))
         img_array = np.array(img)
         img_array = np.expand_dims(img_array, axis=0)
         result = self.trained_cnn.predict_classes(img_array)
@@ -105,8 +105,8 @@ class LocalisationCNN:
           from sklearn.metrics import confusion_matrix
           self.trained_cnn = load_model('localisation_cnn.h5')
           test_datagen = ImageDataGenerator(rescale = 1./255)
-          test_set = test_datagen.flow_from_directory('dataset/test_set',
-                                        target_size = (self.IMGWIDTH, self.IMGHEIGHT),
+          test_set = test_datagen.flow_from_directory('localisation/dataset/test_set',
+                                        target_size = (self.IMGHEIGHT, self.IMGWIDTH),
                                         batch_size = 32,
                                         shuffle=False,
                                         class_mode = 'categorical') 
@@ -151,7 +151,7 @@ class LocalisationCNN:
           confusion_m = confusion_matrix(y_true, y_predicted)
 
 
-LocalisationCNN = LocalisationCNN()
-LocalisationCNN.train_cnn(32, 10)
+#LocalisationCNN = LocalisationCNN()
+#LocalisationCNN.train_cnn(32, 10)
 #LocalisationCNN.test_cnn()
  
