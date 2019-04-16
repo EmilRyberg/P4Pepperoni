@@ -4,12 +4,12 @@ from EMILSPATH import EMILSCLASS
 from movementV1 import MovementClass
 
 class VisionModule:
-      #session = None
-      #def __init__(self, session):
-            #self.session = session
+      session = None
+      def __init__(self, session):
+            self.session = session
             
-      def classify_object(self, session):
-          vid_service = session.service('ALVideoDevice')
+      def classify_object(self):
+          vid_service = self.session.service('ALVideoDevice')
           # subscribe to the top camera
           AL_kTopCamera = 0
           AL_kVGA = 2  # 640x480
@@ -47,11 +47,8 @@ class VisionModule:
               return result
             
             
-      def find_localisation(self, session, localisation):
-          result = -1
-          for x in range(0, 70): #Rotates 350 degrees while checking
-                MovementClass.looking_movem(5)
-                vid_service = session.service('ALVideoDevice')
+      def find_localisation(self, localisation):
+                vid_service = self.session.service('ALVideoDevice')
                 # subscribe to the top camera
                 AL_kTopCamera = 0
                 AL_kVGA = 2  # 640x480
@@ -86,6 +83,4 @@ class VisionModule:
                           image.itemset((y, x, 2), values[i + 2])
                           i += 3
                   result = LocalisationCNN.classify_image(image)
-                  if result == localisation:
-                      return 1 #Returns one if location is found
-          return -1 #Returns -1 if location is not found
+                  return result #Returns array of 2, where [0]=location [1]=certainty
