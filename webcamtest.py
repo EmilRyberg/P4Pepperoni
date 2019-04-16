@@ -22,9 +22,9 @@ def main():
             plt.show()
         
         result = cnn.classify_image(img)
-        
+        print(result)
         #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
-        if result == 0:
+        """if result == 0:
             print('cantine found')
         elif result == 1:
             print('elevators found')
@@ -35,7 +35,7 @@ def main():
         elif result == 5:
             print('toilet found')    
         else:
-            print('No known location')
+            print('No known location')"""
         cv2.imshow("Capturing", frame)
         key=cv2.waitKey(1)
         iteration += 1

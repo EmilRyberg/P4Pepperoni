@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
+import argparse
 
 class LocalisationCNN:
       #Desired image sizes used by ImageDataGenerator under training
@@ -96,9 +97,18 @@ class LocalisationCNN:
         img = pepper_image.resize((self.IMGWIDTH,self.IMGHEIGHT))
         img_array = np.array(img)
         img_array = np.expand_dims(img_array, axis=0)
-        result = self.trained_cnn.predict_classes(img_array)
+        result = self.trained_cnn.predict(img_array)
+        max_index = result.argmax(axis=1)
+        text_string = "Cantine: {0:.2f}%, Elevators: {1:.2f}%, Exit: {2:.2f}%, Negatives: {3:.2f}%, Stairs: {4:.2f}%, Negatives: {5:.2f}%".format(result[0,0]*100.0, 
+                                                                          result[0,1]*100.0,
+                                                                          result[0,2]*100.0,
+                                                                          result[0,3]*100.0,
+                                                                          result[0,4]*100.0,
+                                                                          result[0,5]*100.0)
+        print(text_string)
+        print('predicted '+ max_index)
         return result
-        #0=Cantine, 1=Elavators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
+        #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
         
       #Function for testing the trained CNN  
       def test_cnn(self):

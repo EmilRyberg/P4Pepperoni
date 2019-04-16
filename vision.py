@@ -4,9 +4,9 @@ from EMILSPATH import EMILSCLASS
 from movementV1 import MovementClass
 
 class VisionModule:
-      session = None
-      def __init__(self, session)
-            self.session = session
+      #session = None
+      #def __init__(self, session):
+            #self.session = session
             
       def classify_object(self, session):
           vid_service = session.service('ALVideoDevice')
