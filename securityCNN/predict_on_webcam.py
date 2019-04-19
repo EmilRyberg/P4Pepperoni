@@ -31,10 +31,12 @@ def main(model_name):
         predictions = model.predict(img_array)
         #print ('Predictions: ', predictions)
         max_index = predictions.argmax(axis=1)
-        textStr = "Dangerous: {0:.2f}%, Liquid: {1:.2f}%, NonDangerous: {2:.2f}%".format(predictions[0,0]*100.0, 
+        #Class labels:  {'Dangerous': 0, 'Liquid': 1, 'NoObject': 2, 'NonDangerous': 3}
+        textStr = "Dangerous: {0:.2f}%, Liquid: {1:.2f}%, NoObject: {2:.2f}%, NonDangerous: {3:.2f}%".format(predictions[0,0]*100.0, 
                                                                           predictions[0,1]*100.0, 
-                                                                          predictions[0,2]*100.0)
-        cv2.putText(frame, textStr, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 0), 2, cv2.LINE_AA)
+                                                                          predictions[0,2]*100.0,
+                                                                          predictions[0,3]*100.0)
+        cv2.putText(frame, textStr, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 2, cv2.LINE_AA)
 
         cv2.imshow("Capturing", frame)
         key=cv2.waitKey(1)
