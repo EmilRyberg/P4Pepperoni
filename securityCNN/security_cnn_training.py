@@ -56,19 +56,17 @@ test_set = test_datagen.flow_from_directory('dataset/test_set',
 confusion_m = np.zeros((4,4))
 
 def train_model():
-    classifier.add(Conv2D(32, (5, 5), input_shape = (160, 160, 3)))
-    classifier.add(Conv2D(64, (3, 3), input_shape = (160, 160, 3)))
+    classifier.add(Conv2D(32, (3, 3), input_shape = (160, 160, 3)))
     classifier.add(Activation('relu'))
     #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(64, (3, 3)))
-    classifier.add(Conv2D(128, (3, 3)))
     classifier.add(Activation('relu'))
     #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
-    classifier.add(Conv2D(128, (3, 3)))
+    classifier.add(Conv2D(64, (3, 3)))
     classifier.add(Activation('relu'))
     #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
@@ -77,10 +75,10 @@ def train_model():
     classifier.add(Flatten())
     #classifier.add(Dropout(0.25))
     # Step 4 - Full connection
-    classifier.add(Dense(units = 1028, activation = 'relu')) 
+    classifier.add(Dense(units = 128, activation = 'relu')) 
     #classifier.add(Dropout(0.25))
-    classifier.add(Dense(units = 1028, activation = 'relu')) 
-    classifier.add(Dense(units = 512, activation = 'relu')) 
+    classifier.add(Dense(units = 128, activation = 'relu')) 
+    classifier.add(Dense(units = 128, activation = 'relu')) 
     #classifier.add(Dropout(0.25))
     classifier.add(Dense(units = 4, activation = 'softmax'))
     
@@ -90,7 +88,7 @@ def train_model():
     classifier.compile(optimizer = adam_optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
     classifier.summary()
     
-    checkpoint_callback = ModelCheckpoint('model6_checkpoints/model.{epoch:02d}-{val_acc:.2f}.hdf5', monitor='val_acc', verbose=1, period=1, save_best_only=True)
+    checkpoint_callback = ModelCheckpoint('model9_checkpoints/model.{epoch:02d}-{val_acc:.2f}.hdf5', monitor='val_acc', verbose=1, period=1, save_best_only=True)
     early_stopping_callback = EarlyStopping(monitor='val_loss', min_delta=0.005, patience=8, verbose=1, restore_best_weights=True)
     callbacks = [checkpoint_callback, early_stopping_callback]
     
@@ -121,7 +119,7 @@ def train_model():
     score, acc = classifier.evaluate_generator(test_set, steps = test_set.samples/batch_size)
     print('Test accuracy:', acc)
     #classifier.save_weights('training2.h5')
-    classifier.save('model6_checkpoints/model.hdf5')
+    classifier.save('model9_checkpoints/model.hdf5')
     
 def view_training_images():
     for X_batch, y_batch in training_set:
@@ -183,7 +181,7 @@ def test_model(load_model_from_file = False, model_name = None):
     confusion_m = confusion_matrix(y_true, y_predicted)
 
 def main():
-    #test_model(load_model_from_file = True, model_name = 'model7.h5')
+    #test_model(load_model_from_file = True, model_name = 'model9_checkpoints/model.hdf5')
     train_model()
     
 if __name__ == "__main__":
