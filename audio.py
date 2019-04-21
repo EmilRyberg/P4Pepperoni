@@ -1,3 +1,8 @@
+"""
+Some of the removeContext() are put when theu don't make sense,
+but if they are removed there may be bugs that require the context to be removed
+"""
+
 import qi
 import argparse
 import sys
@@ -24,39 +29,49 @@ class SpeechRecognition(object):
         self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
         self.auto_move = session.service("ALAutonomousLife")
         
-        #Speech recognition setup
-        self.asr.pause(True)
-        self.asr.setVisualExpression(True)
-        self.asr.setAudioExpression(True)
-        self.asr.removeAllContext()
+        #Subscribing to event
         self.proxy.subscribeToEvent('WordRecognized', PEPPER_IP, 'wordRecognized')
-        self.asr.setLanguage("English")
-        self.asr.pause(False)
 
     def listen(self):
+	    asr_listen=''
         #Debugging
+
         asr_listen=self.proxy.getData("WordRecognized")
         print("Data: %s" % asr_listen)
 
-        asr_listen=''
 
         question=None
         location=None
 
+        #Speech recognition configurations
+        self.asr.pause(True)
+        self.asr.removeAllContext()
+        self.asr.setVisualExpression(True)
+        self.asr.setAudioExpression(True)
+        self.asr.setLanguage("English")
+
         # Setting the vocabulary from text file
         vocabulary_file=open("vocabulary", "r")
         vocabulary=vocabulary_file.read().split(',')
-        self.asr.pause(True)
         self.asr.setVocabulary(vocabulary, False)
         self.asr.pause(False)
 
         #Start the speech recognition engine
         self.asr.subscribe("Speech_Question")
         print("Speech recog is running")
-        time.sleep(10)
-        self.asr.unsubscribe("Speech_Question")
+	
+	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
+	    i=10
+	    while i>0:
+	        sleep(1)
+	        i=i-1
+	        asr_listen=self.proxy.getData("WordRecognized")
+	        if asr_listen != '':
+	            break
 
-        asr_listen=self.proxy.getData("WordRecognized")
+	    self.asr.unsubscribe("Speech_Question")
+	
+	    #If else statement that writes question and local to the corrosponding scenario
         print("Data: %s" % asr_listen)
 
         if asr_listen[0] == 'where are the stairs':
@@ -79,10 +94,16 @@ class SpeechRecognition(object):
 
         self.asr.pause(True)
         self.asr.removeAllContext()
+        self.asr.pause(False)
 
         return question, location
+        
+    def say(self, text):
+        self.tts.say(text)
 
     """
+    LEFTOVER CODE, KEEP FOR NOW JUST IN CASE 
+
     def speech_localization(self):
 
         self.asr.pause(True)
@@ -146,18 +167,12 @@ class SpeechRecognition(object):
         self.asr.pause(True)
         self.asr.removeAllContext()
         """
-
-    def say(self, text):
-        self.tts.say(text)
-
-"""
-listen() returns the type of question and the location (A function with all the things)
-
-say(text)
 """
 def main():
        audio=SpeechRecognition()
        audio.test()
+
+
 
 if __name__=="__main__"
        session = qi.Session()
@@ -168,3 +183,4 @@ if __name__=="__main__"
         print("wow")
         sys.exit(1)
     main()
+"""
