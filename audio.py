@@ -33,9 +33,9 @@ class SpeechRecognition(object):
         self.proxy.subscribeToEvent('WordRecognized', PEPPER_IP, 'wordRecognized')
 
     def listen(self):
-	    asr_listen=''
-        #Debugging
+        asr_listen=''
 
+        #Debugging
         asr_listen=self.proxy.getData("WordRecognized")
         print("Data: %s" % asr_listen)
 
@@ -61,15 +61,15 @@ class SpeechRecognition(object):
         print("Speech recog is running")
 	
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
-	    i=10
-	    while i>0:
-	        sleep(1)
-	        i=i-1
-	        asr_listen=self.proxy.getData("WordRecognized")
-	        if asr_listen != '':
+        i=10
+        while i>0:
+            time.sleep(1)
+            i=i-1
+            asr_listen=self.proxy.getData("WordRecognized")
+            if asr_listen != '':
 	            break
 
-	    self.asr.unsubscribe("Speech_Question")
+        self.asr.unsubscribe("Speech_Question")
 	
 	    #If else statement that writes question and local to the corrosponding scenario
         print("Data: %s" % asr_listen)
