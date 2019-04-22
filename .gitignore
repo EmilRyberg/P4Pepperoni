@@ -1,2 +1,6 @@
 /dataset/*
 /localisation/dataset/*
+/securityCNN/*.h5
+/securityCNN/dataset/*
+/securityCNN/model*_checkpoints/*
+/securityCNN/*.zip
