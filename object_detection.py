@@ -11,7 +11,8 @@ class ObjectDetection:
         models.load_model(model_file_path)
         
     """image should be a numpy array, returns numpy array with probabilities for each class"""
-    def predict_probabilities(self, image):
+	#Class labels:  {'Dangerous': 0, 'Liquid': 1, 'NoObject': 2, 'NonDangerous': 3}
+    def predict_certainties(self, image):
         img = Image.fromarray(image, 'RGB')
 
         img = img.resize((160,160))

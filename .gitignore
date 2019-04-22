@@ -5,4 +5,4 @@
 securityCNN/__pycache__/
 
 securityCNN/*.zip
-securityCNN/model?_checkpoints/*
+securityCNN/model*_checkpoints/*
