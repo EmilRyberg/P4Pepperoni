@@ -9,6 +9,7 @@ class VisionModule:
     object_detection = None
     vid_service = None
     capture_device = None
+    subscribeId = "vision2"
 
     def __init__(self, session):
         self.session = session
@@ -20,8 +21,10 @@ class VisionModule:
         AL_kTopCamera = 0
         AL_kVGA = 2  # 640x480
         AL_kBGRColorSpace = 13
-        self.capture_device = self.vid_service.subscribeCamera(
-            "test", AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
+        self.capture_device = self.vid_service.subscribeCamera(self.subscribeId, AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
+    
+    def __del__(self):
+        self.vid_service.unsubscribe(self.subscribeId)
             
     def classify_object(self):
         # creating an empty image of size 640x480
@@ -29,7 +32,7 @@ class VisionModule:
         height = 480
         image = np.zeros((height, width, 3), np.uint8)
         
-        for i in range(20):
+        for i in range(60):
             # Getting an image
             result = self.vid_service.getImageRemote(self.capture_device)
             if result != None:
@@ -64,7 +67,7 @@ class VisionModule:
         height = 480
         image = np.zeros((height, width, 3), np.uint8)
 
-        for i in range(20):
+        for i in range(60):
             # Getting an image
             result = self.vid_service.getImageRemote(self.capture_device)
             if result != None:
@@ -72,14 +75,14 @@ class VisionModule:
             time.sleep(0.1)
           
         # Checking if result is empty or broken
-        if pepper_image == None:
+        if result == None:
             print('cannot capture.')
-        elif pepper_image[6] == None:
+        elif result[6] == None:
             print('no image data string.')
         else:
             # Not sure if below is useful, test.
             #translate value to mat
-            values = map(ord, str(bytearray(pepper_image[6])))
+            values = map(ord, str(bytearray(result[6])))
             # print(values) used for debugging
             i = 0
             for y in range(0, height):

@@ -12,10 +12,10 @@ import time
 PEPPER_IP = "192.168.1.15"
 PEPPER_PORT = 9559
 
-LOCALISATION_TRESHOLD = 90
-DANGEROUS_TRESHOLD = 95
-NONDANGEROUS_TRESHOLD = 95
-LIQUID_TRESHOLD = 50
+LOCALISATION_TRESHOLD = 0.90
+DANGEROUS_TRESHOLD = 0.95
+NONDANGEROUS_TRESHOLD = 0.95
+LIQUID_TRESHOLD = 0.5
 
 CLASSIFY_TIMEOUT = 5
 OBJECT_DETECTION_TRIES = 3
@@ -82,7 +82,7 @@ class Controller(object):
                 #result = [0,0,0,0,0,0]
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                  #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
-                if result[keys[self.audio_location]] > LOCALISATION_TRESHOLD:
+                if result[0, keys[self.audio_location]] > LOCALISATION_TRESHOLD:
                     localisation_success = True
                     print "found location"
                     break
@@ -103,6 +103,7 @@ class Controller(object):
             for i in range(0,OBJECT_DETECTION_TRIES):
                 while timeout == False and done == False:
                     result = self.vision.classify_object()
+                    print "detection results: %f dangerous, %f liquid, %f no object, %f non-dangerous" % (result[0,0], result[0,1], result[0,2], result[0,3])
                     if result[0,0] > DANGEROUS_TRESHOLD:
                         self.say_voiceline("dangerous")
                         done = True

@@ -113,7 +113,7 @@ class LocalisationCNN:
             print('predicted '+ max_index)"""
             result = np.zeros(2)
             result[0] = max_index
-            result[1] = predictions[max_index]
+            result[1] = predictions[0, max_index]
             return predictions
             #return result #Returns array of 2, where [0]=location [1]=certainty
             #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
