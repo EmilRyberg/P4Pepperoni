@@ -59,21 +59,17 @@ class VisionModule:
             
             
     def find_localisation(self):
-        vid_service = self.session.service('ALVideoDevice')
-        # subscribe to the top camera
-        AL_kTopCamera = 0
-        AL_kVGA = 2  # 640x480
-        AL_kBGRColorSpace = 13
-        capture_device = vid_service.subscribeCamera(
-                "vision", AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
-
         # creating an empty image of size 640x480
         width = 640
         height = 480
         image = np.zeros((height, width, 3), np.uint8)
 
-        # Getting an image
-        pepper_image = vid_service.getImageRemote(capture_device)
+        for i in range(20):
+            # Getting an image
+            result = self.vid_service.getImageRemote(self.capture_device)
+            if result != None:
+                break
+            time.sleep(0.1)
           
         # Checking if result is empty or broken
         if pepper_image == None:
