@@ -1,7 +1,7 @@
-import Movement
-import SpeechRecognition
-import VisionModule
-import naoqi
+from movement import Movement
+from audio import SpeechRecognition
+from vision import VisionModule
+#import naoqi
 from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule
@@ -73,8 +73,10 @@ class Controller(object):
             localisation_success = False
             for i in range(0, 360/5):
                 self.movement.turn(5, 1)
-                result = self.vision.localise(self.audio_result.location)
-                if result > LOCALISATION_TRESHOLD:
+                result = self.vision.localise()
+                keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
+                 #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
+                if result[keys[self.audio_result.location]] > LOCALISATION_TRESHOLD:
                     localisation_success = True
                     break
             if localisation_success == True:

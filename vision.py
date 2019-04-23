@@ -49,7 +49,7 @@ class VisionModule:
             return result
             
             
-    def find_localisation(self, localisation):
+    def find_localisation(self):
         vid_service = self.session.service('ALVideoDevice')
         # subscribe to the top camera
         AL_kTopCamera = 0

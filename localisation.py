@@ -42,7 +42,7 @@ class LocalisationCNN:
         cnn.add(Dense(64, activation='relu'))
         cnn.add(Dense(64, activation='relu'))
         cnn.add(Dense(units = 6, activation = 'softmax'))
-      
+        
         #Compiling the CNN
         cnn.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])  
           
@@ -110,7 +110,8 @@ class LocalisationCNN:
         result = np.zeros(2)
         result[0] = max_index
         result[1] = predictions[max_index]
-        return result #Returns array of 2, where [0]=location [1]=certainty
+        return predictions
+        #return result #Returns array of 2, where [0]=location [1]=certainty
         #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
         
     #Function for testing the trained CNN  
