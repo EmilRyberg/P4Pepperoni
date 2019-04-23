@@ -39,6 +39,7 @@ class Controller(object):
         self.audio_success = None
         
         #ALModule.__init__(self)
+        # 
         self.memory = session.service("ALMemory")
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
