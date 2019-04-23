@@ -14,27 +14,28 @@ location = 1 #TO BE CHANGED. just so that my compiler doesnt scream
 
 class Movement(object):
     """Movement Module"""
-    def __init__(self):
+    def __init__(self, session):
         #super(Movement, self).__init__()
-        ALModule.__init__(self)
+        self.session = session
+        #ALModule.__init__(self)
         """super makes the class inherit the methods from init and connects to ALModule
         TO REVISE"""
 
         #Create services
-        self.memory = session.service("ALMemory")
-        self.tts = session.service("ALTextToSpeech")
-        self.motion_service = session.service("ALMotion")
-        self.basic_awareness = session.service("ALBasicAwareness")
-        self.auto_move = session.service("ALAutonomousLife")
-        self.engage = session.service("ALEngagementZones")
-        self.perception = session.service("ALPeoplePerception")
-        self.animation = session.service("ALAnimationPlayer")
+        self.memory = self.session.service("ALMemory")
+        self.tts = self.session.service("ALTextToSpeech")
+        self.motion_service = self.session.service("ALMotion")
+        self.basic_awareness = self.session.service("ALBasicAwareness")
+        self.auto_move = self.session.service("ALAutonomousLife")
+        self.engage = self.session.service("ALEngagementZones")
+        self.perception = self.session.service("ALPeoplePerception")
+        self.animation = self.session.service("ALAnimationPlayer")
 
 
         #Subscribe to Events
 
-        self.subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
-        self.subscriber.signal.connect(self.salute)
+        #self.subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
+        #self.subscriber.signal.connect(self.salute)
         
 
         #List declaration (put here variables?)
@@ -111,11 +112,9 @@ class Movement(object):
         #Restart Autonomous life MAYBE?
         self.auto_move.setAutonomousAbilityEnabled("All",True)
 
-    def salute(self, id):
-        print id
-        self.tts.say("Hello there!")
+    def salute(self):
         self.animation.run("animations/Stand/Gestures/Hey_1")
-        self.memory.unsubscribe("EngagementZones/PersonEnteredZone1")
+        #self.memory.unsubscribe("EngagementZones/PersonEnteredZone1")
 
 
 if __name__=="__main__":

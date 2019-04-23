@@ -35,11 +35,6 @@ class SpeechRecognition(object):
     def listen(self):
         asr_listen=''
 
-        #Debugging
-        asr_listen=self.proxy.getData("WordRecognized")
-        print("Data: %s" % asr_listen)
-
-
         question=None
         location=None
 
@@ -61,13 +56,15 @@ class SpeechRecognition(object):
         print("Speech recog is running")
 	
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
-        i=10
+        success = False
+        i=5
         while i>0:
-            time.sleep(1)
+            time.sleep(3)
             i=i-1
             asr_listen=self.proxy.getData("WordRecognized")
-            if asr_listen != '':
-	            break
+            if asr_listen != '' and asr_listen[0] != 'Pepper':
+                success = True
+                break
 
         self.asr.unsubscribe("Speech_Question")
 	
@@ -96,7 +93,7 @@ class SpeechRecognition(object):
         self.asr.removeAllContext()
         self.asr.pause(False)
 
-        return question, location
+        return (question, location, success)
         
     def say(self, text):
         self.tts.say(text)

@@ -34,17 +34,20 @@ class Controller(object):
         self.audio = SpeechRecognition(session)
         self.vision = VisionModule(session)
         
-        self.audio_result
-        self.audio_success
+        self.audio_question = None
+        self.audio_location = None
+        self.audio_success = None
         
-        ALModule.__init__(self)
+        #ALModule.__init__(self)
         self.memory = session.service("ALMemory")
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
         
-    def main_flow(self):
+    def main_flow(self, unused):
         self.greet()
-        self.wait_for_question()
+        time.sleep(0.5)
+        while (self.audio_question == None):
+            self.wait_for_question()
         if self.audio_success == False:
             return
         self.respond()
@@ -57,18 +60,19 @@ class Controller(object):
     def wait_for_question(self):
         self.audio_success = False
         for i in range(0, 3):
-            result = self.audio.listen()
-            if result.success == True:
+            question, location, success = self.audio.listen()
+            print "Speech stuff: %s, %s, %s" % (question, location, success)
+            if success:
                 self.audio_success = True
-                self.audio_result.question = result.question
-                self.audio_result.location = result.location
+                self.audio_question = question
+                self.audio_location = location
                 break
             else:
                 self.say_voiceline("audio_failed")
         
     def respond(self):
-        if self.audio_result.question == "localisation":
-            self.say_voiceline("localisation", self.audio_result.location)
+        if self.audio_question == "localisation":
+            self.say_voiceline("localisation", self.audio_location)
             self.movement.initialize_movement()
             localisation_success = False
             for i in range(0, 360/5):
@@ -76,18 +80,18 @@ class Controller(object):
                 result = self.vision.localise()
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                  #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
-                if result[keys[self.audio_result.location]] > LOCALISATION_TRESHOLD:
+                if result[keys[self.audio_location]] > LOCALISATION_TRESHOLD:
                     localisation_success = True
                     break
             if localisation_success == True:
                 self.say_voiceline("localisation_success")
                 self.movement.point_at(location=result, direction=0)
-                self.say_voiceline("directions_" + self.audio_result.location)
+                self.say_voiceline("directions_" + self.audio_location)
                 self.movement.finish_movement()
             else:
                 self.say_voiceline("localisation_failed")
                 
-        elif self.audio_result.question == "object_detection":
+        elif self.audio_question == "object_detection":
             self.say_voiceline("object_detection")
             time.sleep(1)
             start = time.time()
@@ -95,14 +99,14 @@ class Controller(object):
             timeout = False
             for i in range(0,OBJECT_DETECTION_TRIES):
                 while timeout == False and done == False:
-                    result = self.vision.classify()
-                    if result.dangerous > DANGEROUS_TRESHOLD:
+                    result = self.vision.classify_object()
+                    if result[0,0] > DANGEROUS_TRESHOLD:
                         self.say_voiceline("dangerous")
                         done = True
-                    elif result.nondangerous > NONDANGEROUS_TRESHOLD:
+                    elif result[0,3] > NONDANGEROUS_TRESHOLD:
                         self.say_voiceline("nondangerous")
                         done = True
-                    elif result.liquid > LIQUID_TRESHOLD:
+                    elif result[0,1] > LIQUID_TRESHOLD:
                         self.display.show("liquid_rules")
                         self.say_voiceline("liquid")
                         done=True
@@ -163,4 +167,6 @@ class Controller(object):
             self.audio.say(voiceline)
                     
 
-Controller()                    
+Controller()
+while True:
+    time.sleep(1)

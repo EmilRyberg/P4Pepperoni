@@ -1,7 +1,6 @@
 import numpy as np
 from localisation import LocalisationCNN
 from object_detection import ObjectDetection
-from movementV1 import MovementClass
 
 class VisionModule:
     session = None
