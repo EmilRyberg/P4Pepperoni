@@ -10,6 +10,7 @@ class ObjectDetection:
     def __init__(self, model_file_path):
         self.model = models.load_model(model_file_path)
         
+        
     """image should be a numpy array, returns numpy array with probabilities for each class"""
 	#Class labels:  {'Dangerous': 0, 'Liquid': 1, 'NoObject': 2, 'NonDangerous': 3}
     def predict_certainties(self, image):

@@ -73,19 +73,19 @@ class SpeechRecognition(object):
 
         if asr_listen[0] == 'where are the stairs':
             question="localisation"
-            location=0
+            location="stairs"
         elif asr_listen[0] == 'where is the bathroom':
             question="localisation"
-            location=1
+            location="bathroom"
         elif asr_listen[0]=='where is the canteen':
             question="localisation"
-            location=2
+            location="canteen"
         elif asr_listen[0]=='where is the elevator':
             question="localisation"
-            location=3
+            location="elevator"
         elif asr_listen[0]=='where is the exit':
             question="localisation"
-            location=4
+            location="exit"
         elif asr_listen[0]=='can this go through security':
             question="object_detection"
 

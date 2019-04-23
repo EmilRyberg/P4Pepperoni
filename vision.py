@@ -4,10 +4,12 @@ from object_detection import ObjectDetection
 
 class VisionModule:
     session = None
-    localisation_cnn = LocalisationCNN('localisation_cnn.h5')
-    object_detection = ObjectDetection('object_detection_model.hdf5')
+    localisation_cnn = None
+    object_detection = None
     def __init__(self, session):
         self.session = session
+        self.localisation_cnn = LocalisationCNN('localisation_cnn.h5')
+        self.object_detection = ObjectDetection('object_detection_model.hdf5')
             
     def classify_object(self):
         vid_service = self.session.service('ALVideoDevice')
@@ -44,6 +46,7 @@ class VisionModule:
                     image.itemset((y, x, 1), values[i + 1])
                     image.itemset((y, x, 2), values[i + 2])
                     i += 3
+            print "image data: %s, shape: %s" % (image, image.shape)
             result = self.object_detection.predict_certainties(image)
             return result
             
