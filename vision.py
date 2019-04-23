@@ -1,10 +1,12 @@
 import numpy as np
 from localisation import LocalisationCNN
-from EMILSPATH import EMILSCLASS
+from object_detection import ObjectDetection
 from movementV1 import MovementClass
 
 class VisionModule:
     session = None
+    localisation_cnn = LocalisationCNN('localisation_cnn.h5')
+    object_detection = ObjectDetection('object_detection_model.hdf5')
     def __init__(self, session):
         self.session = session
             
@@ -14,7 +16,7 @@ class VisionModule:
         AL_kTopCamera = 0
         AL_kVGA = 2  # 640x480
         AL_kBGRColorSpace = 13
-        captureDevice = vid_service.subscribeCamera(
+        capture_device = vid_service.subscribeCamera(
             "vision", AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
 
         # creating an empty image of size 640x480
@@ -23,7 +25,7 @@ class VisionModule:
         image = np.zeros((height, width, 3), np.uint8)
 
         # Getting an image
-        result = vid_service.getImageRemote(captureDevice)
+        result = vid_service.getImageRemote(capture_device)
           
         # Checking if result is empty or broken
         if result == None:
@@ -43,7 +45,7 @@ class VisionModule:
                     image.itemset((y, x, 1), values[i + 1])
                     image.itemset((y, x, 2), values[i + 2])
                     i += 3
-            result = EMILSCLASS.EMILSCLASSIFIER(image)
+            result = self.object_detection.predict_certainties(image)
             return result
             
             
@@ -53,7 +55,7 @@ class VisionModule:
         AL_kTopCamera = 0
         AL_kVGA = 2  # 640x480
         AL_kBGRColorSpace = 13
-        CaptureDevice = vid_service.subscribeCamera(
+        capture_device = vid_service.subscribeCamera(
                 "vision", AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
 
         # creating an empty image of size 640x480
@@ -62,17 +64,17 @@ class VisionModule:
         image = np.zeros((height, width, 3), np.uint8)
 
         # Getting an image
-        PepperImage = vid_service.getImageRemote(CaptureDevice)
+        pepper_image = vid_service.getImageRemote(capture_device)
           
         # Checking if result is empty or broken
-        if PepperImage == None:
+        if pepper_image == None:
             print('cannot capture.')
-        elif PepperImage[6] == None:
+        elif pepper_image[6] == None:
             print('no image data string.')
         else:
             # Not sure if below is useful, test.
             #translate value to mat
-            values = map(ord, str(bytearray(PepperImage[6])))
+            values = map(ord, str(bytearray(pepper_image[6])))
             # print(values) used for debugging
             i = 0
             for y in range(0, height):
@@ -82,5 +84,5 @@ class VisionModule:
                     image.itemset((y, x, 1), values[i + 1])
                     image.itemset((y, x, 2), values[i + 2])
                     i += 3
-            result = LocalisationCNN.classify_image(image)
+            result = self.localisation_cnn.classify_image(image)
             return result #Returns array of 2, where [0]=location [1]=certainty

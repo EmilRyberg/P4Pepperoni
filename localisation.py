@@ -18,8 +18,8 @@ class LocalisationCNN:
     IMGHEIGHT = 96
     trained_cnn = None
      
-    def __init__(self):
-        self.trained_cnn = load_model('localisation_cnn.h5')
+    def __init__(self, model_path):
+        self.trained_cnn = load_model(model_path)
       
     # Building the CNN
     def build_cnn(self, ImgWidth, ImgHeight):
@@ -92,8 +92,9 @@ class LocalisationCNN:
         cnn.save('localisation_cnn.h5') #creates a HDF5 file with the trained NN
           
     #Function to classify image on trained CNN    
-    def classify_image(self, pepper_image):
-        img = pepper_image.resize((self.IMGWIDTH,self.IMGHEIGHT))
+    def classify_image(self, image):
+        pil_img = Image.fromarray(image, 'RGB')
+        img = pil_img.resize((self.IMGWIDTH,self.IMGHEIGHT))
         img_array = np.array(img)
         img_array = np.expand_dims(img_array, axis=0)
         predictions = self.trained_cnn.predict(img_array)
