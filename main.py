@@ -55,7 +55,7 @@ class Controller(object):
         
         
     def greet(self):
-        self.movement.salute()
+        #self.movement.salute()
         self.say_voiceline("hello")
         
     def wait_for_question(self):
@@ -74,15 +74,17 @@ class Controller(object):
     def respond(self):
         if self.audio_question == "localisation":
             self.say_voiceline("localisation", self.audio_location)
-            self.movement.initialize_movement()
+            self.movement.start_movement()
             localisation_success = False
-            for i in range(0, 360/5):
-                self.movement.turn(5, 1)
-                result = self.vision.localise()
+            for i in range(0, 360/15):
+                self.movement.turn(15, 600)
+                result = self.vision.find_localisation()
+                #result = [0,0,0,0,0,0]
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                  #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
                 if result[keys[self.audio_location]] > LOCALISATION_TRESHOLD:
                     localisation_success = True
+                    print "found location"
                     break
             if localisation_success == True:
                 self.say_voiceline("localisation_success")
