@@ -1,6 +1,7 @@
 from movement import Movement
 from audio import SpeechRecognition
 from vision import VisionModule
+from display import Display
 #import naoqi
 from naoqi import ALProxy
 from naoqi import ALBroker
@@ -33,18 +34,26 @@ class Controller(object):
         self.movement = Movement(session)
         self.audio = SpeechRecognition(session)
         self.vision = VisionModule(session)
+        self.display = Display(session)
         
         self.audio_question = None
         self.audio_location = None
         self.audio_success = None
         
-        #ALModule.__init__(self)
-        # 
         self.memory = session.service("ALMemory")
+        self.autonomy = session.service("ALAutonomousLife")
+        #self.enable_autonomy()
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
+
+        #self.audio_question = "localisation"
+        #self.audio_location = "exit"
+        #self.respond()
+        #self.main_flow()
         
-    def main_flow(self, unused):
+    def main_flow(self, unused=None):
+        print "STARTED MAIN FLOW"
+        self.audio_question = None
         self.greet()
         time.sleep(0.5)
         while (self.audio_question == None):
@@ -73,6 +82,7 @@ class Controller(object):
         
     def respond(self):
         if self.audio_question == "localisation":
+            print "localising"
             self.say_voiceline("localisation", self.audio_location)
             self.movement.start_movement()
             localisation_success = False
@@ -81,14 +91,15 @@ class Controller(object):
                 result = self.vision.find_localisation()
                 #result = [0,0,0,0,0,0]
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
-                 #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
+                #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
+                print "detection results: %f canteen, %f elevators, %f exit, %f no location, %f stairs, %f toilets" % (result[0,0], result[0,1], result[0,2], result[0,3], result[0,4], result[0, 5])
                 if result[0, keys[self.audio_location]] > LOCALISATION_TRESHOLD:
                     localisation_success = True
                     print "found location"
                     break
             if localisation_success == True:
                 self.say_voiceline("localisation_success")
-                self.movement.point_at(location=result, direction=0)
+                self.movement.point_at()
                 self.say_voiceline("directions_" + self.audio_location)
                 self.movement.finish_movement()
             else:
@@ -111,7 +122,7 @@ class Controller(object):
                         self.say_voiceline("nondangerous")
                         done = True
                     elif result[0,1] > LIQUID_TRESHOLD:
-                        self.display.show("liquid_rules")
+                        self.display.show_rules()
                         self.say_voiceline("liquid")
                         done=True
                     if time.time() - start > CLASSIFY_TIMEOUT:
@@ -121,7 +132,10 @@ class Controller(object):
                     self.say_voiceline("try_again")
             if done == False:
                 self.say_voiceline("object_detection_failed")
-        
+
+    def enable_autonomy(self):
+        self.autonomy.setAutonomousAbilityEnabled("All", True)
+
     def say_voiceline(self, voiceline, data = ""):
         if voiceline == "hello":
             self.audio.say("Hello")
@@ -173,4 +187,4 @@ class Controller(object):
 
 Controller()
 while True:
-    time.sleep(1)
+   time.sleep(1)

@@ -32,6 +32,11 @@ class SpeechRecognition(object):
         #Subscribing to event
         self.proxy.subscribeToEvent('WordRecognized', PEPPER_IP, 'wordRecognized')
 
+    def __del__(self):
+        self.asr.pause(False)
+        self.asr.unsubscribe("Speech_Question")
+        print "unsubscribed from asr"
+
     def listen(self):
         asr_listen=''
 

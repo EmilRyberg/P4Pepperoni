@@ -25,6 +25,7 @@ class VisionModule:
     
     def __del__(self):
         self.vid_service.unsubscribe(self.subscribeId)
+        print "unsubscribed from camera"
             
     def classify_object(self):
         # creating an empty image of size 640x480
