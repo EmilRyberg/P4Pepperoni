@@ -1,3 +1,4 @@
+/dataset/*
 /localisation/dataset/*
 /securityCNN/dataset/*
 /securityCNN/DatasetOriginal/*
@@ -6,3 +7,4 @@ securityCNN/__pycache__/
 
 securityCNN/*.zip
 securityCNN/model*_checkpoints/*
+*.pyc
