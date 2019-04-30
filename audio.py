@@ -35,10 +35,8 @@ class SpeechRecognition(object):
         atexit.register(self.exit_handler)
 
     def __del__(self):
-        self.asr.pause(False)
-        self.asr.unsubscribe("Speech_Question")
-        self.proxy.unsubscribe("WordRecognized", "wordRecognized")
-        print "unsubscribed from asr and wordsrecognized"
+        self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
+        print "unsubscribed from wordsrecognized"
 
     def listen(self):
         asr_listen=''
@@ -107,10 +105,10 @@ class SpeechRecognition(object):
         self.tts.say(text)
 
     def exit_handler(self):     
-        self.asr.pause(False)
-        self.asr.unsubscribe("Speech_Question")
-        self.proxy.unsubscribe("WordRecognized", "wordRecognized")
-        print "unsubscribed from asr and wordsrecognized"
+        #self.asr.pause(False)
+        #self.asr.unsubscribe("Speech_Question")
+        self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
+        print "unsubscribed from wordsrecognized"
 
     """
     LEFTOVER CODE, KEEP FOR NOW JUST IN CASE 

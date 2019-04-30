@@ -46,6 +46,7 @@ class Controller(object):
         #self.enable_autonomy()
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
+        self.is_running = False
 
         atexit.register(self.exit_handler)
 
@@ -55,6 +56,10 @@ class Controller(object):
         #self.main_flow()
         
     def main_flow(self, unused=None):
+        if (self.is_running):
+            print "main is already running"
+            return
+        self.is_running = True
         print "STARTED MAIN FLOW"
         self.audio_question = None
         self.greet()
@@ -64,7 +69,7 @@ class Controller(object):
         if self.audio_success == False:
             return
         self.respond()
-        
+        self.is_running = False
         
     def greet(self):
         #self.movement.salute()
@@ -104,9 +109,10 @@ class Controller(object):
                 self.say_voiceline("localisation_success")
                 self.movement.point_at()
                 self.say_voiceline("directions_" + self.audio_location)
-                self.movement.finish_movement()
+                
             else:
                 self.say_voiceline("localisation_failed")
+            self.movement.finish_movement()
                 
         elif self.audio_question == "object_detection":
             self.say_voiceline("object_detection")
