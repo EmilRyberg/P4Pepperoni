@@ -1,8 +1,3 @@
-"""
-Some of the removeContext() are put when theu don't make sense,
-but if they are removed there may be bugs that require the context to be removed
-"""
-
 import qi
 import argparse
 import sys
@@ -36,6 +31,7 @@ class SpeechRecognition(object):
 
     def __del__(self):
         self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
+        self.proxy.removeData("WordRecognized")
         print "unsubscribed from wordsrecognized"
 
     def listen(self):
@@ -110,72 +106,6 @@ class SpeechRecognition(object):
         self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
         print "unsubscribed from wordsrecognized"
 
-    """
-    LEFTOVER CODE, KEEP FOR NOW JUST IN CASE 
-
-    def speech_localization(self):
-
-        self.asr.pause(True)
-        self.asr.removeAllContext()
-        vocabulary_localization=["stairs", "bathroom", "exit", "canteen", "elevator"]
-        self.asr.setVocabulary(vocabulary_localization, False)
-        self.asr.pause(False)
-
-        self.asr.subscribe("Speech_Localization")
-        print("Speechrecog is running")
-        time.sleep(5)
-        self.asr.unsubscribe("Speech_Localization")
-        asr_speech_localization=self.proxy.getData("WordRecognized")
-        print("Localization: %s" % asr_speech_localization)
-
-        if asr_speech_localization[0] == 'stairs':
-            self.tts.say("Ok, I will find the stairs")
-
-        elif asr_speech_localization[0] == 'bathroom':
-            self.tts.say("Ok, I will find the bathroom")
-
-        elif asr_speech_localization[0] == 'exit':
-            self.tts.say("Ok, I will find the exit")
-
-        elif asr_speech_localization[0] == 'canteen':
-            self.tts.say("Ok, I will find the canteen")
-
-        elif asr_speech_localization[0] == 'elevator':
-            self.tts.say("Ok, I will find the elevator")
-
-        else:
-            self.tts.say("Sorry, I do not know that location")
-
-        self.asr.pause(True)
-        self.asr.removeAllContext()
-        
-    def speech_object_security(self):
-
-        self.asr.pause(True)
-        self.asr.removeAllContext()
-        vocabulary_localization=["can i bring this through security", "is this safe", "can i take this through security"]
-        self.asr.setVocabulary(vocabulary_localization, False)
-        self.asr.pause(False)
-
-        self.asr.subscribe("Speech_Security")
-        print("Speechrecog is running")
-        time.sleep(5)
-        self.asr.unsubscribe("Speech_Security")
-        asr_speech_security=self.proxy.getData("WordRecognized")
-        print("Localization: %s" % asr_speech_security)
-
-        if asr_speech_localization[0] == 'can i bring this through security':
-            self.tts.say("I will check the object")
-        elif asr_speech_localization[0] == 'is this safe':
-            self.tts.say("I will check the object")
-        elif asr_speech_localization[0] == 'can i take this through security':
-            self.tts.say("I will check the object")
-        else:
-            self.tts.say("Sorry, I do not know that location")
-
-        self.asr.pause(True)
-        self.asr.removeAllContext()
-        """
 """
 def main():
        audio=SpeechRecognition()
