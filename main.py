@@ -46,7 +46,13 @@ class Controller(object):
         #self.enable_autonomy()
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
+        self.wave_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone2")
+        self.wave_subscriber.signal.connect(self.greet)
         self.is_running = False
+
+        self.engage = session.service("ALEngagementZones")
+        self.engage.setFirstLimitDistance(0.75)
+        self.engage.setSecondLimitDistance(1.5)
 
         atexit.register(self.exit_handler)
 
@@ -62,7 +68,7 @@ class Controller(object):
         self.is_running = True
         print "STARTED MAIN FLOW"
         self.audio_question = None
-        self.greet()
+        #self.greet()
         time.sleep(0.5)
         while (self.audio_question == None):
             self.wait_for_question()
