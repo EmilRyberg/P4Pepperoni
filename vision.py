@@ -2,6 +2,7 @@ import numpy as np
 from localisation import LocalisationCNN
 from object_detection import ObjectDetection
 import time
+import atexit
 
 class VisionModule:
     session = None
@@ -9,7 +10,7 @@ class VisionModule:
     object_detection = None
     vid_service = None
     capture_device = None
-    subscribeId = "vision2"
+    subscribeId = "vision"
 
     def __init__(self, session):
         self.session = session
@@ -22,6 +23,7 @@ class VisionModule:
         AL_kVGA = 2  # 640x480
         AL_kBGRColorSpace = 13
         self.capture_device = self.vid_service.subscribeCamera(self.subscribeId, AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
+        atexit.register(self.exit_handler)
     
     def __del__(self):
         self.vid_service.unsubscribe(self.subscribeId)
@@ -95,3 +97,7 @@ class VisionModule:
                     i += 3
             result = self.localisation_cnn.classify_image(image)
             return result #Returns array of 2, where [0]=location [1]=certainty
+
+    def exit_handler(self):
+        self.vid_service.unsubscribe(self.subscribeId)
+        print "unsubscribed from camera"

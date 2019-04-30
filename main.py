@@ -9,8 +9,9 @@ from naoqi import ALModule
 import qi
 import sys
 import time
+import atexit
 
-PEPPER_IP = "192.168.1.15"
+PEPPER_IP = "192.168.43.214"
 PEPPER_PORT = 9559
 
 LOCALISATION_TRESHOLD = 0.90
@@ -45,6 +46,8 @@ class Controller(object):
         #self.enable_autonomy()
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
+
+        atexit.register(self.exit_handler)
 
         #self.audio_question = "localisation"
         #self.audio_location = "exit"
@@ -183,6 +186,9 @@ class Controller(object):
             self.audio.say("")
         else:
             self.audio.say(voiceline)
+    
+    def exit_handler(self):
+        print "exiting main()"
                     
 
 Controller()

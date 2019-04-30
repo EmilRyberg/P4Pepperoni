@@ -11,8 +11,9 @@ import numpy as np
 from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule
+import atexit
 
-PEPPER_IP="pepper.local"
+PEPPER_IP="192.168.43.214"
 PEPPER_PORT=9559
 
 # Speech recognition
@@ -31,11 +32,13 @@ class SpeechRecognition(object):
         
         #Subscribing to event
         self.proxy.subscribeToEvent('WordRecognized', PEPPER_IP, 'wordRecognized')
+        atexit.register(self.exit_handler)
 
     def __del__(self):
         self.asr.pause(False)
         self.asr.unsubscribe("Speech_Question")
-        print "unsubscribed from asr"
+        self.proxy.unsubscribe("WordRecognized", "wordRecognized")
+        print "unsubscribed from asr and wordsrecognized"
 
     def listen(self):
         asr_listen=''
@@ -51,8 +54,8 @@ class SpeechRecognition(object):
         self.asr.setLanguage("English")
 
         # Setting the vocabulary from text file
-        vocabulary_file=open("vocabulary", "r")
-        vocabulary=vocabulary_file.read().split(',')
+        vocabulary_file = open("vocabulary", "r")
+        vocabulary = vocabulary_file.read().split(',')
         self.asr.setVocabulary(vocabulary, False)
         self.asr.pause(False)
 
@@ -102,6 +105,12 @@ class SpeechRecognition(object):
         
     def say(self, text):
         self.tts.say(text)
+
+    def exit_handler(self):     
+        self.asr.pause(False)
+        self.asr.unsubscribe("Speech_Question")
+        self.proxy.unsubscribe("WordRecognized", "wordRecognized")
+        print "unsubscribed from asr and wordsrecognized"
 
     """
     LEFTOVER CODE, KEEP FOR NOW JUST IN CASE 
