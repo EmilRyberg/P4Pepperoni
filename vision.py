@@ -60,7 +60,12 @@ class VisionModule:
                     image.itemset((y, x, 1), values[i + 1])
                     image.itemset((y, x, 2), values[i + 2])
                     i += 3
-            result = self.object_detection.predict_certainties(image)
+            #now the image will be cropped to be square (since CNN is trained on square images,
+            # and borders are not important anyways)
+            width_height_difference = width - height
+            width_to_cut = int(width_height_difference / 2)
+            croppedImage = frame[0:image.shape[0], width_to_cut:image.shape[1]-width_to_cut]
+            result = self.object_detection.predict_certainties(croppedImage)
             return result
             
             
