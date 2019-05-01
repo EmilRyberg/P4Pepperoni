@@ -170,6 +170,6 @@ class LocalisationCNN:
 
 
 #LocalisationCNN = LocalisationCNN()
-#LocalisationCNN.train_cnn(32, 10)
+#LocalisationCNN.train_cnn(32, 8)
 #LocalisationCNN.test_cnn()
  
