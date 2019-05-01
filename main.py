@@ -61,7 +61,7 @@ class Controller(object):
         #self.respond()
         #self.main_flow()
         
-    def main_flow(self, unused=None):
+    def main_flow(self, unused = None):
         if (self.is_running):
             print "main is already running"
             return
@@ -77,7 +77,7 @@ class Controller(object):
         self.respond()
         self.is_running = False
         
-    def greet(self):
+    def greet(self, unused = None):
         #self.movement.salute()
         self.say_voiceline("hello")
         

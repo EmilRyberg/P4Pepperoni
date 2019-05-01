@@ -31,7 +31,6 @@ class SpeechRecognition(object):
 
     def __del__(self):
         self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
-        self.proxy.removeData("WordRecognized")
         print "unsubscribed from wordsrecognized"
 
     def listen(self):
@@ -66,6 +65,7 @@ class SpeechRecognition(object):
             asr_listen=self.proxy.getData("WordRecognized")
             if asr_listen != '' and asr_listen[0] != 'Pepper':
                 success = True
+                self.proxy.removeData("WordRecognized") #clear buffer
                 break
 
         self.asr.unsubscribe("Speech_Question")
