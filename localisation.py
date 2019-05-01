@@ -18,8 +18,8 @@ class LocalisationCNN:
     IMGHEIGHT = 96
     trained_cnn = None
      
-    def __init__(self):
-        self.trained_cnn = load_model('localisation_cnn.h5')
+   # def __init__(self):
+      #  self.trained_cnn = load_model('localisation_cnn.h5')
       
     # Building the CNN
     def build_cnn(self, ImgWidth, ImgHeight):
@@ -110,7 +110,7 @@ class LocalisationCNN:
         result[0] = max_index
         result[1] = predictions[max_index]
         return result #Returns array of 2, where [0]=location [1]=certainty
-        #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
+        #0=Canteen, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
         
     #Function for testing the trained CNN  
     def test_cnn(self):
@@ -163,7 +163,7 @@ class LocalisationCNN:
         confusion_m = confusion_matrix(y_true, y_predicted)
 
 
-#LocalisationCNN = LocalisationCNN()
-#LocalisationCNN.train_cnn(32, 10)
-#LocalisationCNN.test_cnn()
+LocalisationCNN = LocalisationCNN()
+#LocalisationCNN.train_cnn(32, 8)
+LocalisationCNN.test_cnn()
  
