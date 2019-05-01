@@ -11,15 +11,18 @@ import cv2
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
+import tensorflow as tf
 
 class LocalisationCNN:
     #Desired image sizes used by ImageDataGenerator under training
     IMGWIDTH = 128
     IMGHEIGHT = 96
     trained_cnn = None
+    graph = None
      
-   # def __init__(self):
-      #  self.trained_cnn = load_model('localisation_cnn.h5')
+    def __init__(self, model_path):
+        self.trained_cnn = load_model(model_path)
+        self.graph = tf.get_default_graph()
       
     # Building the CNN
     def build_cnn(self, ImgWidth, ImgHeight):
@@ -42,7 +45,7 @@ class LocalisationCNN:
         cnn.add(Dense(64, activation='relu'))
         cnn.add(Dense(64, activation='relu'))
         cnn.add(Dense(units = 6, activation = 'softmax'))
-      
+        
         #Compiling the CNN
         cnn.compile(optimizer = 'adam', loss = 'categorical_crossentropy', metrics = ['accuracy'])  
           
@@ -92,25 +95,28 @@ class LocalisationCNN:
         cnn.save('localisation_cnn.h5') #creates a HDF5 file with the trained NN
           
     #Function to classify image on trained CNN    
-    def classify_image(self, pepper_image):
-        img = pepper_image.resize((self.IMGWIDTH,self.IMGHEIGHT))
-        img_array = np.array(img)
-        img_array = np.expand_dims(img_array, axis=0)
-        predictions = self.trained_cnn.predict(img_array)
-        max_index = predictions.argmax(axis=1)
-        """text_string = "Cantine: {0:.2f}%, Elevators: {1:.2f}%, Exit: {2:.2f}%, Negatives: {3:.2f}%, Stairs: {4:.2f}%, Negatives: {5:.2f}%".format(result[0,0]*100.0, 
-                                                                          result[0,1]*100.0,
-                                                                          result[0,2]*100.0,
-                                                                          result[0,3]*100.0,
-                                                                          result[0,4]*100.0,
-                                                                          result[0,5]*100.0)
-        print(text_string)
-        print('predicted '+ max_index)"""
-        result = np.zeros(2)
-        result[0] = max_index
-        result[1] = predictions[max_index]
-        return result #Returns array of 2, where [0]=location [1]=certainty
-        #0=Canteen, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
+    def classify_image(self, image):
+        with self.graph.as_default():
+            pil_img = Image.fromarray(image, 'RGB')
+            img = pil_img.resize((self.IMGWIDTH,self.IMGHEIGHT))
+            img_array = np.array(img)
+            img_array = np.expand_dims(img_array, axis=0)
+            predictions = self.trained_cnn.predict(img_array)
+            max_index = predictions.argmax(axis=1)
+            """text_string = "Cantine: {0:.2f}%, Elevators: {1:.2f}%, Exit: {2:.2f}%, Negatives: {3:.2f}%, Stairs: {4:.2f}%, Negatives: {5:.2f}%".format(result[0,0]*100.0, 
+                                                                            result[0,1]*100.0,
+                                                                            result[0,2]*100.0,
+                                                                            result[0,3]*100.0,
+                                                                            result[0,4]*100.0,
+                                                                            result[0,5]*100.0)
+            print(text_string)
+            print('predicted '+ max_index)"""
+            result = np.zeros(2)
+            result[0] = max_index
+            result[1] = predictions[0, max_index]
+            return predictions
+            #return result #Returns array of 2, where [0]=location [1]=certainty
+            #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
         
     #Function for testing the trained CNN  
     def test_cnn(self):
@@ -163,7 +169,7 @@ class LocalisationCNN:
         confusion_m = confusion_matrix(y_true, y_predicted)
 
 
-LocalisationCNN = LocalisationCNN()
+#LocalisationCNN = LocalisationCNN()
 #LocalisationCNN.train_cnn(32, 8)
-LocalisationCNN.test_cnn()
+#LocalisationCNN.test_cnn()
  

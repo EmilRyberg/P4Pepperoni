@@ -1,29 +1,46 @@
 import numpy as np
 from localisation import LocalisationCNN
-from EMILSPATH import EMILSCLASS
-from movementV1 import MovementClass
+from object_detection import ObjectDetection
+import time
+import atexit
 
 class VisionModule:
     session = None
+    localisation_cnn = None
+    object_detection = None
+    vid_service = None
+    capture_device = None
+    subscribeId = "vision"
+
     def __init__(self, session):
         self.session = session
-            
-    def classify_object(self):
-        vid_service = self.session.service('ALVideoDevice')
+        self.localisation_cnn = LocalisationCNN('localisation_cnn.h5')
+        self.object_detection = ObjectDetection('object_detection_model.hdf5')
+        self.vid_service = self.session.service('ALVideoDevice')
+                
         # subscribe to the top camera
         AL_kTopCamera = 0
         AL_kVGA = 2  # 640x480
         AL_kBGRColorSpace = 13
-        captureDevice = vid_service.subscribeCamera(
-            "vision", AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
-
+        self.capture_device = self.vid_service.subscribeCamera(self.subscribeId, AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
+        atexit.register(self.exit_handler)
+    
+    def __del__(self):
+        self.vid_service.unsubscribe(self.subscribeId)
+        print "unsubscribed from camera"
+            
+    def classify_object(self):
         # creating an empty image of size 640x480
         width = 640
         height = 480
         image = np.zeros((height, width, 3), np.uint8)
-
-        # Getting an image
-        result = vid_service.getImageRemote(captureDevice)
+        
+        for i in range(60):
+            # Getting an image
+            result = self.vid_service.getImageRemote(self.capture_device)
+            if result != None:
+                break
+            time.sleep(0.1)
           
         # Checking if result is empty or broken
         if result == None:
@@ -43,36 +60,32 @@ class VisionModule:
                     image.itemset((y, x, 1), values[i + 1])
                     image.itemset((y, x, 2), values[i + 2])
                     i += 3
-            result = EMILSCLASS.EMILSCLASSIFIER(image)
+            result = self.object_detection.predict_certainties(image)
             return result
             
             
-    def find_localisation(self, localisation):
-        vid_service = self.session.service('ALVideoDevice')
-        # subscribe to the top camera
-        AL_kTopCamera = 0
-        AL_kVGA = 2  # 640x480
-        AL_kBGRColorSpace = 13
-        CaptureDevice = vid_service.subscribeCamera(
-                "vision", AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
-
+    def find_localisation(self):
         # creating an empty image of size 640x480
         width = 640
         height = 480
         image = np.zeros((height, width, 3), np.uint8)
 
-        # Getting an image
-        PepperImage = vid_service.getImageRemote(CaptureDevice)
+        for i in range(60):
+            # Getting an image
+            result = self.vid_service.getImageRemote(self.capture_device)
+            if result != None:
+                break
+            time.sleep(0.1)
           
         # Checking if result is empty or broken
-        if PepperImage == None:
+        if result == None:
             print('cannot capture.')
-        elif PepperImage[6] == None:
+        elif result[6] == None:
             print('no image data string.')
         else:
             # Not sure if below is useful, test.
             #translate value to mat
-            values = map(ord, str(bytearray(PepperImage[6])))
+            values = map(ord, str(bytearray(result[6])))
             # print(values) used for debugging
             i = 0
             for y in range(0, height):
@@ -82,5 +95,9 @@ class VisionModule:
                     image.itemset((y, x, 1), values[i + 1])
                     image.itemset((y, x, 2), values[i + 2])
                     i += 3
-            result = LocalisationCNN.classify_image(image)
+            result = self.localisation_cnn.classify_image(image)
             return result #Returns array of 2, where [0]=location [1]=certainty
+
+    def exit_handler(self):
+        self.vid_service.unsubscribe(self.subscribeId)
+        print "unsubscribed from camera"
