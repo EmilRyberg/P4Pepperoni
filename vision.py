@@ -10,7 +10,7 @@ class VisionModule:
     object_detection = None
     vid_service = None
     capture_device = None
-    subscribeId = "vision"
+    subscribeId = "vision2"
 
     def __init__(self, session):
         self.session = session

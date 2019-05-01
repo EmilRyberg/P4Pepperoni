@@ -19,7 +19,7 @@ DANGEROUS_TRESHOLD = 0.95
 NONDANGEROUS_TRESHOLD = 0.95
 LIQUID_TRESHOLD = 0.5
 
-CLASSIFY_TIMEOUT = 5
+CLASSIFY_TIMEOUT = 6
 OBJECT_DETECTION_TRIES = 3
 
 class Controller(object):
@@ -74,19 +74,28 @@ class Controller(object):
         time.sleep(0.5)
         while (self.audio_question == None):
             print "CALLED AUDIO LISTEN"
-            self.wait_for_question()
+            while(self.wait_for_question() == False):
+                continue
         if self.audio_success == False:
             return
         self.respond()
         
     def greet(self, unused = None):
         #self.movement.salute()
-        self.say_voiceline("hello")
+        if (self.is_running == False):
+            self.say_voiceline("hello")
         
     def wait_for_question(self):
         self.audio_success = False
         for i in range(0, 3):
-            question, location, success = self.audio.listen()
+            question = None
+            location = None
+            success = None
+            try:
+                question, location, success = self.audio.listen()
+            except Exception as e:
+                print "audio listen failed: " + str(e)
+                return False
             print "Speech stuff: %s, %s, %s" % (question, location, success)
             if success:
                 self.audio_success = True
@@ -95,6 +104,7 @@ class Controller(object):
                 break
             else:
                 self.say_voiceline("audio_failed")
+        return True
         
     def respond(self):
         if self.audio_question == "localisation":
