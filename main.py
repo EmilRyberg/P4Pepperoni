@@ -42,7 +42,7 @@ class Controller(object):
         self.audio_success = None
         
         self.memory = session.service("ALMemory")
-        self.autonomy = session.service("ALAutonomousLife")
+        self.autonomy = session.service("ALAutonomousLife") 
         #self.enable_autonomy()
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
@@ -60,6 +60,8 @@ class Controller(object):
         #self.audio_location = "exit"
         #self.respond()
         #self.main_flow()
+
+        self.say_voiceline("Ready")
         
     def main_flow(self, unused = None):
         if (self.is_running):
@@ -71,11 +73,11 @@ class Controller(object):
         #self.greet()
         time.sleep(0.5)
         while (self.audio_question == None):
+            print "CALLED AUDIO LISTEN"
             self.wait_for_question()
         if self.audio_success == False:
             return
         self.respond()
-        self.is_running = False
         
     def greet(self, unused = None):
         #self.movement.salute()
@@ -147,6 +149,7 @@ class Controller(object):
                     self.say_voiceline("try_again")
             if done == False:
                 self.say_voiceline("object_detection_failed")
+        self.is_running = False
 
     def enable_autonomy(self):
         self.autonomy.setAutonomousAbilityEnabled("All", True)

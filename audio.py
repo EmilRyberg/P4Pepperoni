@@ -19,18 +19,28 @@ class SpeechRecognition(object):
         self.session=session
 
         #Services
-        self.memory = session.service("ALMemory")
+        #self.memory = session.service("ALMemory")
         self.tts = session.service("ALTextToSpeech")
         self.asr = session.service("ALSpeechRecognition")
         self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
         self.auto_move = session.service("ALAutonomousLife")
         
+        for subscriber, period, prec in self.asr.getSubscribersInfo():
+            self.asr.unsubscribe(subscriber)
+
+        print "INIT AUDIO"
+        self.tts.setLanguage("Chinese")
+        #self.tts.say("hello")
+        self.tts.setLanguage("English")
+        #self.tts.say("hello")
+
+
         #Subscribing to event
-        self.proxy.subscribeToEvent('WordRecognized', PEPPER_IP, 'wordRecognized')
+        #self.proxy.subscribeToEvent('WordRecognized', PEPPER_IP, 'wordRecognized')
         atexit.register(self.exit_handler)
 
     def __del__(self):
-        self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
+        #self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
         print "unsubscribed from wordsrecognized"
 
     def listen(self):
@@ -41,7 +51,8 @@ class SpeechRecognition(object):
 
         #Speech recognition configurations
         self.asr.pause(True)
-        self.asr.removeAllContext()
+        #self.asr.removeAllContext()
+        #self.asr.pushContexts()
         self.asr.setVisualExpression(True)
         self.asr.setAudioExpression(True)
         self.asr.setLanguage("English")
@@ -49,7 +60,13 @@ class SpeechRecognition(object):
         # Setting the vocabulary from text file
         vocabulary_file = open("vocabulary", "r")
         vocabulary = vocabulary_file.read().split(',')
-        self.asr.setVocabulary(vocabulary, False)
+        try:
+            self.asr.setVocabulary(vocabulary, False)
+        except Exception as e:
+            print e
+            self.tts.say("fuck this shit i'm out")
+            sys.exit()
+
         self.asr.pause(False)
 
         #Start the speech recognition engine
@@ -95,6 +112,7 @@ class SpeechRecognition(object):
         self.asr.removeAllContext()
         self.asr.pause(False)
 
+        print "AUDIO LISTEN FINISHED"
         return (question, location, success)
         
     def say(self, text):
@@ -103,7 +121,7 @@ class SpeechRecognition(object):
     def exit_handler(self):     
         #self.asr.pause(False)
         #self.asr.unsubscribe("Speech_Question")
-        self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
+        #self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
         print "unsubscribed from wordsrecognized"
 
 """
