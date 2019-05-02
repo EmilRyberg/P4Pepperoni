@@ -22,6 +22,8 @@ LIQUID_TRESHOLD = 0.5
 CLASSIFY_TIMEOUT = 6
 OBJECT_DETECTION_TRIES = 3
 
+GREET_TIMEOUT = 5
+
 class Controller(object):
     def __init__(self):
         session = qi.Session()
@@ -43,8 +45,12 @@ class Controller(object):
         self.audio_question = None
         self.audio_location = None
         self.audio_success = None
+
+        self.greet_time = time.time()
         
         self.memory = session.service("ALMemory")
+        self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
+        self.beep = ALProxy("ALAudioDevice", PEPPER_IP, PEPPER_PORT)
 
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
@@ -59,23 +65,25 @@ class Controller(object):
 
         atexit.register(self.exit_handler)
 
-        #self.audio_question = "localisation"
-        #self.audio_location = "exit"
-        #self.respond()
-        #self.main_flow()
+        self.people_in_zone_2=len(self.proxy.getData("EngagementZones/PeopleInZone2"))
+        self.people_in_zone_1=len(self.proxy.getData("EngagementZones/PeopleInZone1"))
+        print "[INFO] Number of people in zone 2: " + str(self.people_in_zone_2)
+        print "[INFO] Number of people in zone 1: " + str(self.people_in_zone_1)
 
-        self.say_voiceline("Ready")
+        self.beep.playSine(1000, 40, 0, 0.1)
+        time.sleep(0.2)
         
     def main_flow(self, unused = None):
+        print "[INFO] Person entered zone 1"
         if (self.is_running):
-            print "main is already running"
+            print "[WARNING] Main is already running"
             return
         self.is_running = True
         if self.has_greeted == False:
             self.greet()
         print "STARTED MAIN FLOW"
+        self.say_voiceline("Ready")
         self.audio_question = None
-        #self.greet()
         time.sleep(0.5)
         while (self.audio_question == None):
             print "CALLED AUDIO LISTEN"
@@ -86,10 +94,14 @@ class Controller(object):
         self.respond()
         
     def greet(self, unused = None):
+        print "[INFO] Person entered zone 2"
+        if (time.time()-self.greet_time > GREET_TIMEOUT):
+            self.has_greeted = False
         if (self.is_running == False):
-            #self.movement.salute()
+            self.movement.salute()
             self.say_voiceline("hello")
             self.has_greeted = True
+            self.greet_time = time.time()
         
     def wait_for_question(self):
         self.audio_success = False
@@ -226,6 +238,10 @@ class Controller(object):
         print "exiting main()"
                     
 
-Controller()
+controller = Controller()
+if controller.people_in_zone_2:
+    controller.greet()
+if controller.people_in_zone_1:
+    controller.main_flow()
 while True:
    time.sleep(1)
