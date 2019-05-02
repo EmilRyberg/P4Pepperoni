@@ -109,22 +109,22 @@ class SpeechRecognition(object):
 	    #If else statement that writes question and local to the corrosponding scenario
         print("Data: %s" % asr_listen)
 
-        if asr_listen[0] == 'where are the stairs':
+        if asr_listen[0] == 'the stairs':
             question="localisation"
             location="stairs"
-        elif asr_listen[0] == 'where is the bathroom':
+        elif asr_listen[0] == 'the bathroom' or asr_listen[0] == 'the toilet' or asr_listen[0] == 'the lavatory' or asr_listen[0] == 'the restroom':
             question="localisation"
             location="toilets"
-        elif asr_listen[0]=='where is the canteen':
+        elif asr_listen[0]=='the canteen' or asr_listen[0] == 'can i get food':
             question="localisation"
             location="canteen"
-        elif asr_listen[0]=='where is the elevator':
+        elif asr_listen[0]=='the elevator' or asr_listen[0] == 'the lift':
             question="localisation"
             location="elevator"
-        elif asr_listen[0]=='where is the exit':
+        elif asr_listen[0]=='the exit' or asr_listen[0] == 'can i leave' or asr_listen[0] == 'can i get out' or asr_listen[0] == 'can i get outside':
             question="localisation"
             location="exit"
-        elif asr_listen[0]=='can this go through security':
+        elif asr_listen[0]=='through security' or asr_listen[0] == 'is this dangerous':
             question="object_detection"
 
         self.asr.pause(True)
