@@ -20,9 +20,9 @@ class LocalisationCNN:
     trained_cnn = None
     graph = None
      
-    def __init__(self, model_path):
-        self.trained_cnn = load_model(model_path)
-        self.graph = tf.get_default_graph()
+    #def __init__(self, model_path):
+        #self.trained_cnn = load_model(model_path)
+        #self.graph = tf.get_default_graph()
       
     # Building the CNN
     def build_cnn(self, ImgWidth, ImgHeight):
@@ -42,8 +42,8 @@ class LocalisationCNN:
       
         #Fully connected layers
         cnn.add(Dense(64, activation='relu'))
-        cnn.add(Dense(64, activation='relu'))
-        cnn.add(Dense(64, activation='relu'))
+        cnn.add(Dense(32, activation='relu'))
+        cnn.add(Dense(16, activation='relu'))
         cnn.add(Dense(units = 6, activation = 'softmax'))
         
         #Compiling the CNN
@@ -169,7 +169,7 @@ class LocalisationCNN:
         confusion_m = confusion_matrix(y_true, y_predicted)
 
 
-#LocalisationCNN = LocalisationCNN()
+LocalisationCNN = LocalisationCNN()
 #LocalisationCNN.train_cnn(32, 8)
-#LocalisationCNN.test_cnn()
+LocalisationCNN.test_cnn()
  
