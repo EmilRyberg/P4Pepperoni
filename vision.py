@@ -3,6 +3,7 @@ from localisation import LocalisationCNN
 from object_detection import ObjectDetection
 import time
 import atexit
+import random
 
 class VisionModule:
     session = None
@@ -10,7 +11,7 @@ class VisionModule:
     object_detection = None
     vid_service = None
     capture_device = None
-    subscribeId = "vision2"
+    subscribeId = "vision" + str(random.randint(1,100000))
 
     def __init__(self, session):
         self.session = session

@@ -7,8 +7,9 @@ from naoqi import ALProxy
 from naoqi import ALBroker
 from naoqi import ALModule
 import atexit
+import inspect
 
-PEPPER_IP="192.168.43.214"
+PEPPER_IP="pepper.local"
 PEPPER_PORT=9559
 
 # Speech recognition
@@ -22,6 +23,7 @@ class SpeechRecognition(object):
         #self.memory = session.service("ALMemory")
         self.tts = session.service("ALTextToSpeech")
         self.asr = session.service("ALSpeechRecognition")
+        self.motion_service = session.service("ALMotion")
         self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
         self.auto_move = session.service("ALAutonomousLife")
         
@@ -50,18 +52,37 @@ class SpeechRecognition(object):
         # Setting the vocabulary from text file
         vocabulary_file = open("vocabulary", "r")
         vocabulary = vocabulary_file.read().split(',')
-        try:
-            self.asr.setVocabulary(vocabulary, False)
-        except Exception as e:
-            print "cant set vocabulary"
+        success = False
+        for i in range(0,10):
+            try:
+                self.asr.setVocabulary(vocabulary, False)
+            except Exception as e:
+                print "[ERROR] Can't set vocabulary"
+                self.auto_move.setAutonomousAbilityEnabled("All", False)
+                self.motion_service.rest()
+                self.motion_service.wakeUp()
+                self.auto_move.setAutonomousAbilityEnabled("All", True)
+                time.sleep(0.2)
+                self.asr = None
+                self.asr = session.service("ALSpeechRecognition")
+                self.asr.pause(True)
+                self.asr.removeAllContext()
+                time.sleep(0.2)
+            else:
+                success = True
+                break
+        if not success:
+            print "[FATAL] Couldn't set vocabulary"
+            sys.exit()
 
-        self.asr.pause(False)
+        #self.asr.pause(False)
 
     def __del__(self):
         #self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
         print "unsubscribed from wordsrecognized"
 
     def listen(self):
+        self.asr.pause(False)
         asr_listen=''
 
         question=None
@@ -75,11 +96,12 @@ class SpeechRecognition(object):
         success = False
         i = 5
         while i > 0:
-            time.sleep(3)
+            time.sleep(5)
             i = i - 1
             asr_listen = self.proxy.getData("WordRecognized")
-            if asr_listen != '' and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] < -2.0:
+            if asr_listen != '' and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0:
                 success = True
+                self.proxy.removeData("WordRecognized") #clear buffer
                 break
 
         self.asr.unsubscribe("Speech_Question") 
@@ -92,7 +114,7 @@ class SpeechRecognition(object):
             location="stairs"
         elif asr_listen[0] == 'where is the bathroom':
             question="localisation"
-            location="bathroom"
+            location="toilets"
         elif asr_listen[0]=='where is the canteen':
             question="localisation"
             location="canteen"
@@ -106,8 +128,8 @@ class SpeechRecognition(object):
             question="object_detection"
 
         self.asr.pause(True)
-        self.asr.removeAllContext()
-        self.asr.pause(False)
+        #self.asr.removeAllContext()
+        #self.asr.pause(False)
 
         print "AUDIO LISTEN FINISHED"
         return (question, location, success)

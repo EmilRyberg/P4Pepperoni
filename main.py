@@ -11,7 +11,7 @@ import sys
 import time
 import atexit
 
-PEPPER_IP = "192.168.43.214"
+PEPPER_IP = "pepper.local"
 PEPPER_PORT = 9559
 
 LOCALISATION_TRESHOLD = 0.90
@@ -31,7 +31,10 @@ class Controller(object):
         except RuntimeError:
             print("session connect failed")
             sys.exit(1)
-        
+
+        self.autonomy = session.service("ALAutonomousLife")
+        self.autonomy.setAutonomousAbilityEnabled("All", True)
+
         self.movement = Movement(session)
         self.audio = SpeechRecognition(session)
         self.vision = VisionModule(session)
@@ -42,13 +45,13 @@ class Controller(object):
         self.audio_success = None
         
         self.memory = session.service("ALMemory")
-        self.autonomy = session.service("ALAutonomousLife") 
-        #self.enable_autonomy()
+
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
         self.wave_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone2")
         self.wave_subscriber.signal.connect(self.greet)
         self.is_running = False
+        self.has_greeted = False
 
         self.engage = session.service("ALEngagementZones")
         self.engage.setFirstLimitDistance(0.75)
@@ -68,6 +71,8 @@ class Controller(object):
             print "main is already running"
             return
         self.is_running = True
+        if self.has_greeted == False:
+            self.greet()
         print "STARTED MAIN FLOW"
         self.audio_question = None
         #self.greet()
@@ -81,9 +86,10 @@ class Controller(object):
         self.respond()
         
     def greet(self, unused = None):
-        #self.movement.salute()
         if (self.is_running == False):
+            #self.movement.salute()
             self.say_voiceline("hello")
+            self.has_greeted = True
         
     def wait_for_question(self):
         self.audio_success = False
@@ -112,7 +118,7 @@ class Controller(object):
             self.say_voiceline("localisation", self.audio_location)
             self.movement.start_movement()
             localisation_success = False
-            for i in range(0, 360/15):
+            for i in range(0, 30/15):
                 self.movement.turn(15, 600)
                 result = self.vision.find_localisation()
                 #result = [0,0,0,0,0,0]
@@ -160,6 +166,7 @@ class Controller(object):
             if done == False:
                 self.say_voiceline("object_detection_failed")
         self.is_running = False
+        self.has_greeted = False
 
     def enable_autonomy(self):
         self.autonomy.setAutonomousAbilityEnabled("All", True)
