@@ -21,10 +21,10 @@ def main(model_file_path):
         textStr = "Cantine: {0:.2f}%, Elevators: {1:.2f}%,".format(result[0,0]*100.0, 
                                                             result[0,1]*100.0)
         textStr2 = "Exit: {0:.2f}%, Negatives: {1:.2f}%".format(result[0,2]*100.0, result[0,3]*100.0)
-        textStr3 = "Stairs: {0:.2f}%, Negatives: {1:.2f}%".format(result[0,4]*100.0, result[0,5]*100.0)
-        cv2.putText(frame, textStr, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 2, cv2.LINE_AA)
-        cv2.putText(frame, textStr2, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 2, cv2.LINE_AA)
-        cv2.putText(frame, textStr3, (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 2, cv2.LINE_AA)
+        textStr3 = "Stairs: {0:.2f}%, Toilets: {1:.2f}%".format(result[0,4]*100.0, result[0,5]*100.0)
+        cv2.putText(frame, textStr, (10, 20), cv2.FONT_HERSHEY_DUPLEX, 0.4, (255, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(frame, textStr2, (10, 50), cv2.FONT_HERSHEY_DUPLEX, 0.4, (255, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(frame, textStr3, (10, 80), cv2.FONT_HERSHEY_DUPLEX, 0.4, (255, 0, 0), 1, cv2.LINE_AA)
 
         cv2.imshow("Capturing", frame)
         key=cv2.waitKey(1)
