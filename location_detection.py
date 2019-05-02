@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 
-class LocalisationCNN:
+class LocationDetection:
     #Desired image sizes used by ImageDataGenerator under training
     IMGWIDTH = 128
     IMGHEIGHT = 96

@@ -1,5 +1,5 @@
 import numpy as np
-from localisation import LocalisationCNN
+from location_detection import LocationDetection
 from object_detection import ObjectDetection
 import time
 import atexit
@@ -14,7 +14,7 @@ class VisionModule:
 
     def __init__(self, session):
         self.session = session
-        self.localisation_cnn = LocalisationCNN('localisation_cnn.h5')
+        self.localisation_cnn = LocationDetection('localisation_cnn.h5')
         self.object_detection = ObjectDetection('object_detection_model.hdf5')
         self.vid_service = self.session.service('ALVideoDevice')
                 
@@ -64,7 +64,7 @@ class VisionModule:
             # and borders are not important anyways)
             width_height_difference = width - height
             width_to_cut = int(width_height_difference / 2)
-            croppedImage = frame[0:image.shape[0], width_to_cut:image.shape[1]-width_to_cut]
+            croppedImage = image[0:image.shape[0], width_to_cut:image.shape[1]-width_to_cut]
             result = self.object_detection.predict_certainties(croppedImage)
             return result
             

@@ -1,5 +1,5 @@
 /dataset/*
-/localisation/dataset/*
+/LocalisationCNN/dataset/*
 /securityCNN/dataset/*
 /securityCNN/DatasetOriginal/*
 /securityCNN/*.h5
