@@ -96,7 +96,7 @@ class SpeechRecognition(object):
         success = False
         i = 5
         while i > 0:
-            time.sleep(5)
+            time.sleep(2)
             i = i - 1
             asr_listen = self.proxy.getData("WordRecognized")
             if asr_listen != '' and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0:

@@ -144,6 +144,7 @@ class Controller(object):
             start = time.time()
             done = False
             timeout = False
+            self.enable_autonomy(False)
             for i in range(0,OBJECT_DETECTION_TRIES):
                 while timeout == False and done == False:
                     result = self.vision.classify_object()
@@ -165,11 +166,13 @@ class Controller(object):
                     self.say_voiceline("try_again")
             if done == False:
                 self.say_voiceline("object_detection_failed")
+            self.enable_autonomy(True)
+
         self.is_running = False
         self.has_greeted = False
 
-    def enable_autonomy(self):
-        self.autonomy.setAutonomousAbilityEnabled("All", True)
+    def enable_autonomy(self, enable=True):
+        self.autonomy.setAutonomousAbilityEnabled("All", enable)
 
     def say_voiceline(self, voiceline, data = ""):
         if voiceline == "hello":
@@ -193,7 +196,7 @@ class Controller(object):
         elif voiceline == "directions_exit":
             self.audio.say("directions to exit")
         elif voiceline == "object_detection":
-            self.audio.say("Please hold the object in front of my camera")
+            self.audio.say("Please hold the object in front of my head")
         elif voiceline == "dangerous":
             self.audio.say("I think this is not allowed")
         elif voiceline == "nondangerous":
