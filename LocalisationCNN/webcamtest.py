@@ -1,48 +1,36 @@
 import cv2
 from PIL import Image
-from localisation import LocalisationCNN
 import numpy as np
-from matplotlib import pyplot as plt
+from keras.models import load_model
 
-def main():
+def main(model_file_path):
+    trained_cnn = load_model(model_file_path)
     video = cv2.VideoCapture(0)
-    cnn = LocalisationCNN()
-    iteration = 0;
     
     while True:
         return_value, frame = video.read()
         if not return_value:
             continue
         img = Image.fromarray(frame, 'RGB')
-        if iteration % 120 == 0:
-            resized = np.array(img.resize((128,96)))
-            resized = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
-            #plt.subplot(331)
-            plt.imshow(resized)
-            plt.show()
+        resized = np.array(img.resize((128,96)))
+        resized = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
+        resized = np.expand_dims(resized, axis=0)
         
-        result = cnn.classify_image(img)
-        print(result)
-        #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
-        if result[0] == 0 and result[1] > 0.8:
-            print('cantine found')
-        elif result[0] == 1 and result[1] > 0.8:
-            print('elevators found')
-        elif result[0] == 2 and result[1] > 0.8:
-            print('exit found')
-        elif result[0] == 4 and result[1] > 0.8:
-            print('stairs found')
-        elif result[0] == 5 and result[1] > 0.8:
-            print('toilet found')    
-        else:
-            print('No known location')
+        result = trained_cnn.predict(resized)
+        #max_index = result.argmax(axis=1)
+        text_string = "Cantine: {0:.2f}%, Elevators: {1:.2f}%, Exit: {2:.2f}%, Negatives: {3:.2f}%, Stairs: {4:.2f}%, Negatives: {5:.2f}%".format(result[0,0]*100.0, 
+                                                                            result[0,1]*100.0,
+                                                                            result[0,2]*100.0,
+                                                                            result[0,3]*100.0,
+                                                                            result[0,4]*100.0,
+                                                                            result[0,5]*100.0)
+        print(text_string)
         cv2.imshow("Capturing", frame)
         key=cv2.waitKey(1)
-        iteration += 1
         if key == ord('q'):
             break
     video.release()
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    main()
+    main('localisation_cnn.h5')
