@@ -1,12 +1,12 @@
 /dataset/*
-/LocalisationCNN/dataset/*
+/localisation/dataset/*
 /securityCNN/dataset/*
 /securityCNN/DatasetOriginal/*
 /securityCNN/*.h5
-securityCNN/__pycache__/
+/securityCNN/__pycache__/
 
-securityCNN/*.zip
-securityCNN/model*_checkpoints/*
+/securityCNN/*.zip
+/securityCNN/model*_checkpoints/*
 *.pyc
 
-*.hdf5
+/securityCNN/*.hdf5
