@@ -83,12 +83,12 @@ class Controller(object):
         
     def greet(self, id, unused = None):
         self.person_id = id
-        #self.movement.salute()
+        self.movement.salute()
         self.say_voiceline("hello")
     
     def goodbye(self,id):
         if id == self.person_id:
-            self. say_voiceline("Goodbye")
+            self.say_voiceline("Goodbye")
         
     def wait_for_question(self):
         self.audio_success = False
@@ -116,7 +116,7 @@ class Controller(object):
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                 #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
                 print "detection results: %f canteen, %f elevators, %f exit, %f no location, %f stairs, %f toilets" % (result[0,0], result[0,1], result[0,2], result[0,3], result[0,4], result[0, 5])
-                if result[0, keys[self.audio_location]] > LOCALISATION_TRESHOLD:
+                if result[0, keys[self.audio_location]] > LOCALISATION_TRESHOLD: #FIX THIS AS WE DON'T HAVE A THRESHOLD ANYWAY
                     localisation_success = True
                     print "found location"
                     break
@@ -173,21 +173,21 @@ class Controller(object):
         elif voiceline == "localisation_failed":
             self.audio.say("Sorry, I couldn't find it")
         elif voiceline == "directions_stairs":
-            self.audio.say("directions to stairs")
+            self.audio.say("You will find the stairs right over there, by the tree")
         elif voiceline == "directions_canteen":
-            self.audio.say("directions to canteen")
+            self.audio.say("You will find the canteen over there, on the other side of this floor")
         elif voiceline == "directions_elevator":
-            self.audio.say("directions to elevator")
+            self.audio.say("You will find the elevator around the corner over there by the red wall")
         elif voiceline == "directions_toilets":
-            self.audio.say("directions to toilets")
+            self.audio.say("You will find the toilet over there. Just take the second door on your left") #Double check it's the second door
         elif voiceline == "directions_exit":
-            self.audio.say("directions to exit")
+            self.audio.say("You will find the nearest exit right around the corner")
         elif voiceline == "object_detection":
-            self.audio.say("Please hold the object in front of my camera")
+            self.audio.say("Please hold the object in front of my camera for approximately 5 seconds")
         elif voiceline == "dangerous":
-            self.audio.say("I think this is not allowed")
+            self.audio.say("I don't think this is allowed through security")
         elif voiceline == "nondangerous":
-            self.audio.say("I think this is okay")
+            self.audio.say("I think you are allowed to bring the through security")
         elif voiceline == "liquid":
             self.audio.say("I think this is a liquid. Please refer to the screen or ask personnel")
         elif voiceline == "no_object":

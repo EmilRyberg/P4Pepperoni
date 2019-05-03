@@ -32,10 +32,7 @@ class LocationDetection:
                                                                             result[0,5]*100.0)
             print(text_string)
             print('predicted '+ max_index)"""
-            result = np.zeros(2)
-            result[0] = max_index
-            result[1] = predictions[0, max_index]
-            return predictions
-            #return result #Returns array of 2, where [0]=location [1]=certainty
+            return max_index
+            #Returns max index of predictions
             #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
         
