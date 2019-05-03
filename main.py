@@ -48,6 +48,8 @@ class Controller(object):
         self.greet_subscriber.signal.connect(self.main_flow)
         self.wave_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone2")
         self.wave_subscriber.signal.connect(self.greet)
+        self.goodbye_subscriber = self.memory.subscriber("EngagementZones/PersonMovedAway")
+        self.goodbye_subscriber.signal.connect(self.goodbye)
         self.is_running = False
 
         self.engage = session.service("ALEngagementZones")
@@ -79,9 +81,14 @@ class Controller(object):
             return
         self.respond()
         
-    def greet(self, unused = None):
+    def greet(self, id, unused = None):
+        self.person_id = id
         #self.movement.salute()
         self.say_voiceline("hello")
+    
+    def goodbye(self,id):
+        if id == self.person_id:
+            self. say_voiceline("Goodbye")
         
     def wait_for_question(self):
         self.audio_success = False
