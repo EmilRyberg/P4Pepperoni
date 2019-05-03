@@ -69,7 +69,7 @@ class VisionModule:
             return result
             
             
-    def find_localisation(self):
+    def find_location(self):
         # creating an empty image of size 640x480
         width = 640
         height = 480

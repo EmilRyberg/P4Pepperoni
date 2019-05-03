@@ -111,7 +111,7 @@ class Controller(object):
             localisation_success = False
             for i in range(0, 360/15):
                 self.movement.turn(15, 600)
-                result = self.vision.find_localisation()
+                result = self.vision.find_location()
                 #result = [0,0,0,0,0,0]
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                 #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
