@@ -23,7 +23,7 @@ session = tf.Session(config=config)
 tensorflow_backend.set_session(session)
 
 classifier = Sequential()
-batch_size = 64
+batch_size = 48
 image_size = (200, 200)
 
 train_datagen = ImageDataGenerator(rescale=1./255,
@@ -56,33 +56,38 @@ confusion_m = np.zeros((4,4))
 
 def train_model():
     classifier.add(Conv2D(64, (3, 3), input_shape = (200, 200, 3)))
+    classifier.add(BatchNormalization())
     classifier.add(Activation('relu'))
-    #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(64, (3, 3)))
+    classifier.add(BatchNormalization())
     classifier.add(Activation('relu'))
-    #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(128, (3, 3)))
+    classifier.add(BatchNormalization())
     classifier.add(Activation('relu'))
-    #classifier.add(BatchNormalization())
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(128, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
         
-    # Step 3 - Flattening
     classifier.add(Flatten())
-    #classifier.add(Dropout(0.25))
-    # Step 4 - Full connection
-    classifier.add(Dense(units = 256, activation = 'relu')) 
     classifier.add(Dropout(0.2))
-    classifier.add(Dense(units = 256, activation = 'relu')) 
+
+    classifier.add(Dense(units = 512)) 
+    classifier.add(BatchNormalization())
+    classifier.add(Activation('relu'))
     classifier.add(Dropout(0.2))
-    classifier.add(Dense(units = 128, activation = 'relu')) 
+    classifier.add(Dense(units = 512)) 
+    classifier.add(BatchNormalization())
+    classifier.add(Activation('relu'))
+    classifier.add(Dropout(0.2))
+    classifier.add(Dense(units = 256)) 
+    classifier.add(BatchNormalization())
+    classifier.add(Activation('relu'))
     classifier.add(Dropout(0.2))
     classifier.add(Dense(units = 4, activation = 'softmax'))
     
@@ -92,13 +97,13 @@ def train_model():
     classifier.compile(optimizer = adam_optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
     classifier.summary()
     
-    checkpoint_callback = ModelCheckpoint('model15_checkpoints/model.{epoch:02d}-{val_acc:.2f}.hdf5', monitor='val_acc', verbose=1, period=1, save_best_only=True)
+    checkpoint_callback = ModelCheckpoint('model16_checkpoints/model.{epoch:02d}-{val_acc:.2f}.hdf5', monitor='val_acc', verbose=1, period=1, save_best_only=True)
     #early_stopping_callback = EarlyStopping(monitor='val_loss', min_delta=0.005, patience=8, verbose=1, restore_best_weights=True)
     callbacks = [checkpoint_callback]
     
     history = classifier.fit_generator(training_set,
                              steps_per_epoch = training_set.samples/batch_size,
-                             epochs = 50,
+                             epochs = 40,
                              validation_data = validation_set,
                              validation_steps = validation_set.samples/batch_size,
                              callbacks = callbacks)
@@ -185,8 +190,8 @@ def test_model(load_model_from_file = False, model_name = None):
     confusion_m = confusion_matrix(y_true, y_predicted)
 
 def main():
-    #test_model(load_model_from_file = True, model_name = 'model14_checkpoints/model.33-0.93.hdf5')
-    train_model()
+    test_model(load_model_from_file = True, model_name = 'model16_checkpoints/model.25-0.95.hdf5')
+    #train_model()
     
 if __name__ == "__main__":
     main()
