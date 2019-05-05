@@ -9,14 +9,11 @@ from naoqi import ALModule
 import atexit
 import inspect
 
-PEPPER_IP="pepper.local"
-PEPPER_PORT=9559
-
 # Speech recognition
 class SpeechRecognition(object):
     session=None
 
-    def __init__(self,session):
+    def __init__(self,session, ip, port):
         self.session=session
 
         #Services
@@ -24,9 +21,9 @@ class SpeechRecognition(object):
         self.tts = session.service("ALTextToSpeech")
         self.asr = session.service("ALSpeechRecognition")
         self.motion_service = session.service("ALMotion")
-        self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
+        self.proxy = ALProxy("ALMemory", ip, port)
         self.auto_move = session.service("ALAutonomousLife")
-        
+
         #for subscriber, period, prec in self.asr.getSubscribersInfo():
             #self.asr.unsubscribe(subscriber)
 
@@ -91,7 +88,7 @@ class SpeechRecognition(object):
         #Start the speech recognition engine
         self.asr.subscribe("Speech_Question")
         print("Speech recog is running")
-	
+
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
         success = False
         i = 5
@@ -104,7 +101,7 @@ class SpeechRecognition(object):
                 self.proxy.removeData("WordRecognized") #clear buffer
                 break
 
-        self.asr.unsubscribe("Speech_Question") 
+        self.asr.unsubscribe("Speech_Question")
 
 	    #If else statement that writes question and local to the corrosponding scenario
         print("Data: %s" % asr_listen)
@@ -133,11 +130,11 @@ class SpeechRecognition(object):
 
         print "AUDIO LISTEN FINISHED"
         return (question, location, success)
-        
+
     def say(self, text):
         self.tts.say(text)
 
-    def exit_handler(self):     
+    def exit_handler(self):
         #self.asr.pause(False)
         #self.asr.unsubscribe("Speech_Question")
         #self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
