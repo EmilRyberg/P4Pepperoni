@@ -10,6 +10,7 @@ import qi
 import sys
 import time
 import atexit
+import random
 
 PEPPER_IP = "pepper.local"
 PEPPER_PORT = 9559
@@ -19,7 +20,6 @@ DANGEROUS_TRESHOLD = 0.95
 NONDANGEROUS_TRESHOLD = 0.95
 LIQUID_TRESHOLD = 0.5
 
-CLASSIFY_TIMEOUT = 6
 OBJECT_DETECTION_TRIES = 3
 
 GREET_TIMEOUT = 5
@@ -38,7 +38,7 @@ class Controller(object):
         self.autonomy.setAutonomousAbilityEnabled("All", True)
 
         self.movement = Movement(session)
-        self.audio = SpeechRecognition(session)
+        self.audio = SpeechRecognition(session, PEPPER_IP, PEPPER_PORT)
         self.vision = VisionModule(session)
         self.display = Display(session)
 
@@ -152,35 +152,30 @@ class Controller(object):
                 self.say_voiceline("localisation_success")
                 self.movement.point_at()
                 self.say_voiceline("directions_" + self.audio_location)
-
             else:
                 self.say_voiceline("localisation_failed")
             self.movement.finish_movement()
 
         elif self.audio_question == "object_detection":
             self.say_voiceline("object_detection")
-            time.sleep(1)
-            start = time.time()
             done = False
-            timeout = False
+            time.sleep(0.5)
             self.enable_autonomy(False)
+            self.beep.playSine(1000, 40, 0, 0.1)
             for i in range(0,OBJECT_DETECTION_TRIES):
-                while timeout == False and done == False:
-                    result = self.vision.classify_object()
-                    print "detection results: %f dangerous, %f liquid, %f no object, %f non-dangerous" % (result[0,0], result[0,1], result[0,2], result[0,3])
-                    if result[0,0] > DANGEROUS_TRESHOLD:
-                        self.say_voiceline("dangerous")
-                        done = True
-                    elif result[0,3] > NONDANGEROUS_TRESHOLD:
-                        self.say_voiceline("nondangerous")
-                        done = True
-                    elif result[0,1] > LIQUID_TRESHOLD:
-                        self.display.show_rules()
-                        self.say_voiceline("liquid")
-                        done=True
-                    if time.time() - start > CLASSIFY_TIMEOUT:
-                        self.say_voiceline("no_object")
-                        timeout = True
+                time.sleep(1.5)
+                result = self.vision.classify_object()
+                print "detection results: %f dangerous, %f liquid, %f no object, %f non-dangerous" % (result[0,0], result[0,1], result[0,2], result[0,3])
+                if result[0,0] > DANGEROUS_TRESHOLD:
+                    self.say_voiceline("dangerous")
+                    done = True
+                elif result[0,3] > NONDANGEROUS_TRESHOLD:
+                    self.say_voiceline("nondangerous")
+                    done = True
+                elif result[0,1] > LIQUID_TRESHOLD:
+                    self.display.show_rules()
+                    self.say_voiceline("liquid")
+                    done=True
                 if done == False and i < OBJECT_DETECTION_TRIES:
                     self.say_voiceline("try_again")
             if done == False:
@@ -195,7 +190,15 @@ class Controller(object):
 
     def say_voiceline(self, voiceline, data = ""):
         if voiceline == "hello":
-            self.audio.say("Hello")
+            i = random.randint(0,3)
+            if i == 0:
+                self.audio.say("Hello")
+            elif i == 1:
+                self.audio.say("Fuck off")
+            elif i == 2:
+                self.audio.say("Move away, cunt")
+            elif i == 3:
+                self.audio.say("Retard")
         elif voiceline == "audio_failed":
             self.audio.say("Sorry, I didn't get your question")
         elif voiceline == "localisation":
