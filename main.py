@@ -11,7 +11,7 @@ import sys
 import time
 import atexit
 
-PEPPER_IP = "192.168.43.214"
+PEPPER_IP = "pepper.local"
 PEPPER_PORT = 9559
 
 LOCALISATION_TRESHOLD = 0.90
@@ -19,8 +19,10 @@ DANGEROUS_TRESHOLD = 0.95
 NONDANGEROUS_TRESHOLD = 0.95
 LIQUID_TRESHOLD = 0.5
 
-CLASSIFY_TIMEOUT = 5
+CLASSIFY_TIMEOUT = 6
 OBJECT_DETECTION_TRIES = 3
+
+GREET_TIMEOUT = 5
 
 class Controller(object):
     def __init__(self):
@@ -31,7 +33,10 @@ class Controller(object):
         except RuntimeError:
             print("session connect failed")
             sys.exit(1)
-        
+
+        self.autonomy = session.service("ALAutonomousLife")
+        self.autonomy.setAutonomousAbilityEnabled("All", True)
+
         self.movement = Movement(session)
         self.audio = SpeechRecognition(session)
         self.vision = VisionModule(session)
@@ -40,10 +45,13 @@ class Controller(object):
         self.audio_question = None
         self.audio_location = None
         self.audio_success = None
+
+        self.greet_time = time.time()
         
         self.memory = session.service("ALMemory")
-        self.autonomy = session.service("ALAutonomousLife") 
-        #self.enable_autonomy()
+        self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
+        self.beep = ALProxy("ALAudioDevice", PEPPER_IP, PEPPER_PORT)
+
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
         self.wave_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone2")
@@ -51,6 +59,7 @@ class Controller(object):
         self.goodbye_subscriber = self.memory.subscriber("EngagementZones/PersonMovedAway")
         self.goodbye_subscriber.signal.connect(self.goodbye)
         self.is_running = False
+        self.has_greeted = False
 
         self.engage = session.service("ALEngagementZones")
         self.engage.setFirstLimitDistance(0.75)
@@ -58,25 +67,30 @@ class Controller(object):
 
         atexit.register(self.exit_handler)
 
-        #self.audio_question = "localisation"
-        #self.audio_location = "exit"
-        #self.respond()
-        #self.main_flow()
+        self.people_in_zone_2=len(self.proxy.getData("EngagementZones/PeopleInZone2"))
+        self.people_in_zone_1=len(self.proxy.getData("EngagementZones/PeopleInZone1"))
+        print "[INFO] Number of people in zone 2: " + str(self.people_in_zone_2)
+        print "[INFO] Number of people in zone 1: " + str(self.people_in_zone_1)
 
-        self.say_voiceline("Ready")
+        self.beep.playSine(1000, 40, 0, 0.1)
+        time.sleep(0.2)
         
     def main_flow(self, unused = None):
+        print "[INFO] Person entered zone 1"
         if (self.is_running):
-            print "main is already running"
+            print "[WARNING] Main is already running"
             return
         self.is_running = True
+        if self.has_greeted == False:
+            self.greet()
         print "STARTED MAIN FLOW"
+        self.say_voiceline("Ready")
         self.audio_question = None
-        #self.greet()
         time.sleep(0.5)
         while (self.audio_question == None):
             print "CALLED AUDIO LISTEN"
-            self.wait_for_question()
+            while(self.wait_for_question() == False):
+                continue
         if self.audio_success == False:
             return
         self.respond()
@@ -89,11 +103,27 @@ class Controller(object):
     def goodbye(self,id):
         if id == self.person_id:
             self.say_voiceline("Goodbye")
+    def greet(self, unused = None):
+        print "[INFO] Person entered zone 2"
+        if (time.time()-self.greet_time > GREET_TIMEOUT):
+            self.has_greeted = False
+        if (self.is_running == False):
+            self.movement.salute()
+            self.say_voiceline("hello")
+            self.has_greeted = True
+            self.greet_time = time.time()
         
     def wait_for_question(self):
         self.audio_success = False
         for i in range(0, 3):
-            question, location, success = self.audio.listen()
+            question = None
+            location = None
+            success = None
+            try:
+                question, location, success = self.audio.listen()
+            except Exception as e:
+                print "audio listen failed: " + str(e)
+                return False
             print "Speech stuff: %s, %s, %s" % (question, location, success)
             if success:
                 self.audio_success = True
@@ -102,6 +132,7 @@ class Controller(object):
                 break
             else:
                 self.say_voiceline("audio_failed")
+        return True
         
     def respond(self):
         if self.audio_question == "localisation":
@@ -109,7 +140,7 @@ class Controller(object):
             self.say_voiceline("localisation", self.audio_location)
             self.movement.start_movement()
             localisation_success = False
-            for i in range(0, 360/15):
+            for i in range(0, 30/15):
                 self.movement.turn(15, 600)
                 result = self.vision.find_location()
                 #result = [0,0,0,0,0,0]
@@ -135,6 +166,7 @@ class Controller(object):
             start = time.time()
             done = False
             timeout = False
+            self.enable_autonomy(False)
             for i in range(0,OBJECT_DETECTION_TRIES):
                 while timeout == False and done == False:
                     result = self.vision.classify_object()
@@ -156,10 +188,13 @@ class Controller(object):
                     self.say_voiceline("try_again")
             if done == False:
                 self.say_voiceline("object_detection_failed")
-        self.is_running = False
+            self.enable_autonomy(True)
 
-    def enable_autonomy(self):
-        self.autonomy.setAutonomousAbilityEnabled("All", True)
+        self.is_running = False
+        self.has_greeted = False
+
+    def enable_autonomy(self, enable=True):
+        self.autonomy.setAutonomousAbilityEnabled("All", enable)
 
     def say_voiceline(self, voiceline, data = ""):
         if voiceline == "hello":
@@ -213,6 +248,10 @@ class Controller(object):
         print "exiting main()"
                     
 
-Controller()
+controller = Controller()
+if controller.people_in_zone_2:
+    controller.greet()
+if controller.people_in_zone_1:
+    controller.main_flow()
 while True:
    time.sleep(1)

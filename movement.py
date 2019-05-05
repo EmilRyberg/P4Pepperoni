@@ -5,6 +5,7 @@ from naoqi import ALModule
 import qi
 import sys
 import time
+import threading
 
 PEPPER_IP = "192.168.1.15"
 
@@ -98,8 +99,10 @@ class Movement(object):
         self.auto_move.setAutonomousAbilityEnabled("All",True)
 
     def salute(self):
-        self.animation.run("animations/Stand/Gestures/Hey_1")
+        threading.Thread(target=self.salute_async_execute).start()
 
+    def salute_async_execute(self):
+        self.animation.run("animations/Stand/Gestures/Hey_1")
 
 if __name__=="__main__":
     """myBroker = ALBroker("myBroker",
