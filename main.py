@@ -158,17 +158,17 @@ class Controller(object):
             time.sleep(0.5)
             self.enable_autonomy(False)
             self.beep.playSine(1000, 40, 0, 0.1)
-            for i in range(0,OBJECT_DETECTION_TRIES):
+            for i in range(0, OBJECT_DETECTION_TRIES):
                 time.sleep(1.5)
                 result = self.vision.classify_object()
-                print "[INFO] Detection results: %f dangerous, %f liquid, %f no object, %f non-dangerous" % (result[0,0], result[0,1], result[0,2], result[0,3])
-                if result[0,0] > DANGEROUS_TRESHOLD:
+                print "[INFO] Detection results: %i. (0 = dangerous, 1 = liquid, 2 = no object, 3 = non-dangerous)" % (result)
+                if result == 0:
                     self.say_voiceline("dangerous")
                     done = True
-                elif result[0,3] > NONDANGEROUS_TRESHOLD:
+                elif result == 3:
                     self.say_voiceline("nondangerous")
                     done = True
-                elif result[0,1] > LIQUID_TRESHOLD:
+                elif result == 1:
                     self.display.show_rules()
                     self.say_voiceline("liquid")
                     done=True
