@@ -41,13 +41,13 @@ class Controller(object):
         self.audio = SpeechRecognition(session)
         self.vision = VisionModule(session)
         self.display = Display(session)
-        
+
         self.audio_question = None
         self.audio_location = None
         self.audio_success = None
 
         self.greet_time = time.time()
-        
+
         self.memory = session.service("ALMemory")
         self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
         self.beep = ALProxy("ALAudioDevice", PEPPER_IP, PEPPER_PORT)
@@ -74,7 +74,7 @@ class Controller(object):
 
         self.beep.playSine(1000, 40, 0, 0.1)
         time.sleep(0.2)
-        
+
     def main_flow(self, unused = None):
         print "[INFO] Person entered zone 1"
         if (self.is_running):
@@ -94,17 +94,10 @@ class Controller(object):
         if self.audio_success == False:
             return
         self.respond()
-        
+
     def greet(self, id, unused = None):
-        self.person_id = id
-        self.movement.salute()
-        self.say_voiceline("hello")
-    
-    def goodbye(self,id):
-        if id == self.person_id:
-            self.say_voiceline("Goodbye")
-    def greet(self, unused = None):
         print "[INFO] Person entered zone 2"
+        self.person_id = id
         if (time.time()-self.greet_time > GREET_TIMEOUT):
             self.has_greeted = False
         if (self.is_running == False):
@@ -112,7 +105,11 @@ class Controller(object):
             self.say_voiceline("hello")
             self.has_greeted = True
             self.greet_time = time.time()
-        
+
+    def goodbye(self,id):
+        if id == self.person_id:
+            self.say_voiceline("Goodbye")
+
     def wait_for_question(self):
         self.audio_success = False
         for i in range(0, 3):
@@ -133,7 +130,7 @@ class Controller(object):
             else:
                 self.say_voiceline("audio_failed")
         return True
-        
+
     def respond(self):
         if self.audio_question == "localisation":
             print "localising"
@@ -155,11 +152,11 @@ class Controller(object):
                 self.say_voiceline("localisation_success")
                 self.movement.point_at()
                 self.say_voiceline("directions_" + self.audio_location)
-                
+
             else:
                 self.say_voiceline("localisation_failed")
             self.movement.finish_movement()
-                
+
         elif self.audio_question == "object_detection":
             self.say_voiceline("object_detection")
             time.sleep(1)
@@ -243,10 +240,10 @@ class Controller(object):
             self.audio.say("")
         else:
             self.audio.say(voiceline)
-    
+
     def exit_handler(self):
         print "exiting main()"
-                    
+
 
 controller = Controller()
 if controller.people_in_zone_2:
