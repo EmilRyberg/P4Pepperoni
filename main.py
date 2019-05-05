@@ -42,6 +42,8 @@ class Controller(object):
         self.vision = VisionModule(session)
         self.display = Display(session)
 
+        print "\n \n \n" #distance from tensorflow text
+
         self.audio_question = None
         self.audio_location = None
         self.audio_success = None
@@ -60,6 +62,7 @@ class Controller(object):
         self.goodbye_subscriber.signal.connect(self.goodbye)
         self.is_running = False
         self.has_greeted = False
+        self.person_left_zone = False
 
         self.engage = session.service("ALEngagementZones")
         self.engage.setFirstLimitDistance(0.75)
@@ -75,32 +78,31 @@ class Controller(object):
         self.beep.playSine(1000, 40, 0, 0.1)
         time.sleep(0.2)
 
-    def main_flow(self, unused = None):
+    def main_flow(self, id, unused = None):
         print "[INFO] Person entered zone 1"
         if (self.is_running):
             print "[WARNING] Main is already running"
             return
+        self.person_id = id
         self.is_running = True
         if self.has_greeted == False:
             self.greet()
-        print "STARTED MAIN FLOW"
+        print "\n STARTED MAIN FLOW \n"
         self.say_voiceline("Ready")
         self.audio_question = None
         time.sleep(0.5)
-        while (self.audio_question == None):
-            print "CALLED AUDIO LISTEN"
-            while(self.wait_for_question() == False):
-                continue
-        if self.audio_success == False:
-            return
-        self.respond()
+        while self.audio_question == None and not person_left_zone:
+            self.wait_for_question()
+        if not person_left_zone:
+            self.respond()
+        person_left_zone = False
 
     def greet(self, id, unused = None):
         print "[INFO] Person entered zone 2"
-        self.person_id = id
         if (time.time()-self.greet_time > GREET_TIMEOUT):
             self.has_greeted = False
         if (self.is_running == False):
+            self.person_id = id
             self.movement.salute()
             self.say_voiceline("hello")
             self.has_greeted = True
@@ -109,44 +111,38 @@ class Controller(object):
     def goodbye(self,id):
         if id == self.person_id:
             self.say_voiceline("Goodbye")
+            print "[INFO] Person left zone"
+            self.person_left_zone = True
 
     def wait_for_question(self):
         self.audio_success = False
-        for i in range(0, 3):
-            question = None
-            location = None
-            success = None
-            try:
-                question, location, success = self.audio.listen()
-            except Exception as e:
-                print "audio listen failed: " + str(e)
-                return False
-            print "Speech stuff: %s, %s, %s" % (question, location, success)
-            if success:
-                self.audio_success = True
-                self.audio_question = question
-                self.audio_location = location
-                break
-            else:
-                self.say_voiceline("audio_failed")
-        return True
+        question = None
+        location = None
+        success = None
+        question, location, success = self.audio.listen()
+        print "[INFO] Speech recognition results: %s, %s, %s" % (question, location, success)
+        if success:
+            self.audio_success = True
+            self.audio_question = question
+            self.audio_location = location
+            break
+        else:
+            self.say_voiceline("audio_failed")
 
     def respond(self):
         if self.audio_question == "localisation":
-            print "localising"
+            print "[INFO] Localising"
             self.say_voiceline("localisation", self.audio_location)
             self.movement.start_movement()
             localisation_success = False
             for i in range(0, 30/15):
                 self.movement.turn(15, 600)
                 result = self.vision.find_location()
-                #result = [0,0,0,0,0,0]
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
-                #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
-                print "detection results: %f canteen, %f elevators, %f exit, %f no location, %f stairs, %f toilets" % (result[0,0], result[0,1], result[0,2], result[0,3], result[0,4], result[0, 5])
-                if result[0, keys[self.audio_location]] > LOCALISATION_TRESHOLD: #FIX THIS AS WE DON'T HAVE A THRESHOLD ANYWAY
+                print "[INFO] Detected location: " + keys.keys()[keys.values().index(result)]
+                if result == keys[self.audio_location]
                     localisation_success = True
-                    print "found location"
+                    print "[INFO] Found location"
                     break
             if localisation_success == True:
                 self.say_voiceline("localisation_success")
@@ -165,7 +161,7 @@ class Controller(object):
             for i in range(0,OBJECT_DETECTION_TRIES):
                 time.sleep(1.5)
                 result = self.vision.classify_object()
-                print "detection results: %f dangerous, %f liquid, %f no object, %f non-dangerous" % (result[0,0], result[0,1], result[0,2], result[0,3])
+                print "[INFO] Detection results: %f dangerous, %f liquid, %f no object, %f non-dangerous" % (result[0,0], result[0,1], result[0,2], result[0,3])
                 if result[0,0] > DANGEROUS_TRESHOLD:
                     self.say_voiceline("dangerous")
                     done = True
