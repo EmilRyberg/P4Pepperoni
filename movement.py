@@ -48,6 +48,7 @@ class Movement(object):
         joint_times=[[1.0], [2.0], [2.0]]
         is_absolute = True
         stiffness_lists=[[0.3],[0.3], [0.3]]
+        stiffness_lists_end=[[0],[0], [0]]
         stiff_times=[[5.0], [5.0], [5.0]]
 
         self.motion_service.openHand("RHand",_async=True)
@@ -57,7 +58,7 @@ class Movement(object):
 
         self.motion_service.stiffnessInterpolation(joint_list[direction], stiffness_lists, stiff_times,_async=True)
         self.motion_service.angleInterpolation(joint_list[direction], [[-0.87],[-0.06], [0.24]], joint_times, is_absolute, _async=True)
-
+        self.motion_service.stiffnessInterpolation(joint_list[direction], stiffness_lists_end, stiff_times, _async=True)
         self.auto_move.setAutonomousAbilityEnabled("All",True)
 
 

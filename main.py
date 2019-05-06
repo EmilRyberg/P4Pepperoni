@@ -37,8 +37,12 @@ class Controller(object):
         self.autonomy = session.service("ALAutonomousLife")
         self.autonomy.setAutonomousAbilityEnabled("All", True)
 
+        self.memory = session.service("ALMemory")
+        self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
+        self.beep = ALProxy("ALAudioDevice", PEPPER_IP, PEPPER_PORT)
+
         self.movement = Movement(session)
-        self.audio = SpeechRecognition(session, PEPPER_IP, PEPPER_PORT)
+        self.audio = SpeechRecognition(session, PEPPER_IP, PEPPER_PORT, self.proxy)
         self.vision = Vision(session)
         self.display = Display(session)
 
@@ -49,10 +53,6 @@ class Controller(object):
         self.audio_success = None
 
         self.greet_time = time.time()
-
-        self.memory = session.service("ALMemory")
-        self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
-        self.beep = ALProxy("ALAudioDevice", PEPPER_IP, PEPPER_PORT)
 
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
@@ -119,14 +119,14 @@ class Controller(object):
         question = None
         location = None
         success = None
-        try:
-            question, location, success = self.audio.listen()
-        except Exception as e:
-            print e
-            self.beep.playSine(440, 60, 0, 0.1)
-            time.sleep(0.2)
-            self.beep.playSine(440, 60, 0, 0.1)
-            sys.exit()
+        #try:
+        question, location, success = self.audio.listen()
+        #except Exception as e:
+            #print e
+            #self.beep.playSine(440, 60, 0, 0.1)
+            #time.sleep(0.2)
+            #self.beep.playSine(440, 60, 0, 0.1)
+            #sys.exit()
 
         print "[INFO] Speech recognition results: %s, %s, %s" % (question, location, success)
         if success:
@@ -142,7 +142,7 @@ class Controller(object):
             self.say_voiceline("localisation", self.audio_location)
             self.movement.start_movement()
             localisation_success = False
-            for i in range(0, 30/15):
+            for i in range(0, 60/15):
                 self.movement.turn(15, 600)
                 result = self.vision.find_location()
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
@@ -196,7 +196,8 @@ class Controller(object):
 
     def say_voiceline(self, voiceline, data = ""):
         if voiceline == "hello":
-            i = random.randint(0,3)
+            #i = random.randint(0,3)
+            i = 0
             if i == 0:
                 self.audio.say("Hello")
             elif i == 1:

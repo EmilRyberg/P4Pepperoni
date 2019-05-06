@@ -8,12 +8,13 @@ from naoqi import ALBroker
 from naoqi import ALModule
 import atexit
 import inspect
+import random
 
 # Speech recognition
 class SpeechRecognition(object):
     session=None
 
-    def __init__(self,session, ip, port):
+    def __init__(self,session, ip, port, proxy):
         self.session=session
 
         #Services
@@ -21,9 +22,10 @@ class SpeechRecognition(object):
         self.tts = session.service("ALTextToSpeech")
         self.asr = session.service("ALSpeechRecognition")
         self.motion_service = session.service("ALMotion")
-        self.proxy = ALProxy("ALMemory", ip, port)
+        #self.proxy = ALProxy("ALMemory", ip, port)
+        self.proxy = proxy
         #self.dialog_proxy = ALProxy("ALDialog", ip , port)
-        self.auto_move = session.service("ALAutonomousLife")
+        #self.auto_move = session.service("ALAutonomousLife")
         self.autonomous_life = ALProxy("ALAutonomousLife", ip, port)
 
         #for subscriber, period, prec in self.asr.getSubscribersInfo():
@@ -47,7 +49,7 @@ class SpeechRecognition(object):
         self.asr.setVisualExpression(True)
         self.asr.setAudioExpression(True)
         self.asr.setLanguage("English")
-
+        self.asr.removeAllContext()
         # Setting the vocabulary from text file
         vocabulary_file = open("vocabulary", "r")
         vocabulary = vocabulary_file.read().split(',')
@@ -57,6 +59,7 @@ class SpeechRecognition(object):
                 self.asr.setVocabulary(vocabulary, False)
             except Exception as e:
                 print "[ERROR] Can't set vocabulary"
+                print e
                 #self.dialog_proxy.setLanguage("Chinese")
                 if i < 1:
                     #self.auto_move.setAutonomousAbilityEnabled("All", False)
@@ -67,13 +70,13 @@ class SpeechRecognition(object):
                     #self.motion_service.wakeUp()
                     #time.sleep(2)
                     #self.auto_move.setAutonomousAbilityEnabled("All", True)
-                    time.sleep(2)
+                    #time.sleep(2)
                     self.autonomous_life.setState("solitary")
                     #self.asr = None
                     #self.asr = session.service("ALSpeechRecognition")
                     self.asr.pause(True)
                     self.asr.removeAllContext()
-                    time.sleep(3)
+                    time.sleep(1)
                 #self.dialog_proxy.setLanguage("English")
             else:
                 success = True
@@ -81,7 +84,7 @@ class SpeechRecognition(object):
         if not success:
             print "[FATAL] Couldn't set vocabulary"
             sys.exit()
-
+        time.sleep(3)
         #self.asr.pause(False)
 
     def __del__(self):
@@ -95,8 +98,9 @@ class SpeechRecognition(object):
         question=None
         location=None
 
+        random_id = "speech" + str(random.randint(0,100000))
         #Start the speech recognition engine
-        self.asr.subscribe("Speech_Question")
+        self.asr.subscribe(random_id)
         print("Speech recog is running")
 
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
@@ -105,13 +109,19 @@ class SpeechRecognition(object):
         while i > 0:
             time.sleep(2)
             i = i - 1
-            asr_listen = self.proxy.getData("WordRecognized")
+            try:
+                asr_listen = self.proxy.getData("WordRecognized")
+            except Exception as e:
+                print e
+                asr_listen = ''
+            if asr_listen == None:
+                asr_listen = ''
             if asr_listen != '' and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0:
                 success = True
                 self.proxy.removeData("WordRecognized") #clear buffer
                 break
 
-        self.asr.unsubscribe("Speech_Question")
+        self.asr.unsubscribe(random_id)
 
 	    #If else statement that writes question and local to the corrosponding scenario
         print("Data: %s" % asr_listen)
