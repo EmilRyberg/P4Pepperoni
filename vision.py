@@ -73,6 +73,7 @@ class VisionModule:
                 else:
                     summed_predictions = summed_predictions + result
         
+        print (summed_predictions.shape)
         return np.argmax(summed_predictions, axis = 1)
             
             
@@ -114,6 +115,7 @@ class VisionModule:
                     summed_predictions = predicted_location
                 else:
                     summed_predictions = summed_predictions + predicted_location
+        print (summed_predictions.shape)
         average_prediction = summed_predictions.argmax(axis = 1)
         return average_prediction #Returns the most frequent observed location
 

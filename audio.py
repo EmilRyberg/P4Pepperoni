@@ -22,7 +22,9 @@ class SpeechRecognition(object):
         self.asr = session.service("ALSpeechRecognition")
         self.motion_service = session.service("ALMotion")
         self.proxy = ALProxy("ALMemory", ip, port)
+        #self.dialog_proxy = ALProxy("ALDialog", ip , port)
         self.auto_move = session.service("ALAutonomousLife")
+        self.autonomous_life = ALProxy("ALAutonomousLife", ip, port)
 
         #for subscriber, period, prec in self.asr.getSubscribersInfo():
             #self.asr.unsubscribe(subscriber)
@@ -50,21 +52,29 @@ class SpeechRecognition(object):
         vocabulary_file = open("vocabulary", "r")
         vocabulary = vocabulary_file.read().split(',')
         success = False
-        for i in range(0,10):
+        for i in range(0,2):
             try:
                 self.asr.setVocabulary(vocabulary, False)
             except Exception as e:
                 print "[ERROR] Can't set vocabulary"
-                self.auto_move.setAutonomousAbilityEnabled("All", False)
-                self.motion_service.rest()
-                self.motion_service.wakeUp()
-                self.auto_move.setAutonomousAbilityEnabled("All", True)
-                time.sleep(0.2)
-                self.asr = None
-                self.asr = session.service("ALSpeechRecognition")
-                self.asr.pause(True)
-                self.asr.removeAllContext()
-                time.sleep(0.2)
+                #self.dialog_proxy.setLanguage("Chinese")
+                if i < 1:
+                    #self.auto_move.setAutonomousAbilityEnabled("All", False)
+                    self.autonomous_life.setState("disabled")
+                    #time.sleep(2)
+                    #self.motion_service.rest()
+                    #time.sleep(2)
+                    #self.motion_service.wakeUp()
+                    #time.sleep(2)
+                    #self.auto_move.setAutonomousAbilityEnabled("All", True)
+                    time.sleep(2)
+                    self.autonomous_life.setState("solitary")
+                    #self.asr = None
+                    #self.asr = session.service("ALSpeechRecognition")
+                    self.asr.pause(True)
+                    self.asr.removeAllContext()
+                    time.sleep(3)
+                #self.dialog_proxy.setLanguage("English")
             else:
                 success = True
                 break

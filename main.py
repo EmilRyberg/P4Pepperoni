@@ -86,16 +86,16 @@ class Controller(object):
         self.person_id = id
         self.is_running = True
         if self.has_greeted == False:
-            self.greet()
+            self.greet(id)
         print "\n STARTED MAIN FLOW \n"
         self.say_voiceline("Ready")
         self.audio_question = None
         time.sleep(0.5)
-        while self.audio_question == None and not person_left_zone:
+        while self.audio_question == None and not self.person_left_zone:
             self.wait_for_question()
-        if not person_left_zone:
+        if not self.person_left_zone:
             self.respond()
-        person_left_zone = False
+        self.person_left_zone = False
 
     def greet(self, id, unused = None):
         print "[INFO] Person entered zone 2"
@@ -112,20 +112,27 @@ class Controller(object):
         if id == self.person_id:
             self.say_voiceline("Goodbye")
             print "[INFO] Person left zone"
-            self.person_left_zone = True
+            #self.person_left_zone = True
 
     def wait_for_question(self):
         self.audio_success = False
         question = None
         location = None
         success = None
-        question, location, success = self.audio.listen()
+        try:
+            question, location, success = self.audio.listen()
+        except Exception as e:
+            print e
+            self.beep.playSine(440, 60, 0, 0.1)
+            time.sleep(0.2)
+            self.beep.playSine(440, 60, 0, 0.1)
+            sys.exit()
+
         print "[INFO] Speech recognition results: %s, %s, %s" % (question, location, success)
         if success:
             self.audio_success = True
             self.audio_question = question
             self.audio_location = location
-            break
         else:
             self.say_voiceline("audio_failed")
 
@@ -140,7 +147,7 @@ class Controller(object):
                 result = self.vision.find_location()
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                 print "[INFO] Detected location: " + keys.keys()[keys.values().index(result)]
-                if result == keys[self.audio_location]
+                if result == keys[self.audio_location]:
                     localisation_success = True
                     print "[INFO] Found location"
                     break
@@ -165,13 +172,16 @@ class Controller(object):
                 if result == 0:
                     self.say_voiceline("dangerous")
                     done = True
+                    break
                 elif result == 3:
                     self.say_voiceline("nondangerous")
                     done = True
+                    break
                 elif result == 1:
                     self.display.show_rules()
                     self.say_voiceline("liquid")
                     done=True
+                    break
                 if done == False and i < OBJECT_DETECTION_TRIES:
                     self.say_voiceline("try_again")
             if done == False:
@@ -245,9 +255,10 @@ class Controller(object):
 
 
 controller = Controller()
+
 if controller.people_in_zone_2:
-    controller.greet()
+    controller.greet(controller.proxy.getData("EngagementZones/PeopleInZone2")[0])
 if controller.people_in_zone_1:
-    controller.main_flow()
+    controller.main_flow(controller.proxy.getData("EngagementZones/PeopleInZone1")[0])
 while True:
    time.sleep(1)

@@ -20,7 +20,7 @@ class ObjectDetection:
         with self.graph.as_default():
             img = Image.fromarray(image, 'RGB')
 
-            img = img.resize((160,160))
+            img = img.resize((200,200))
             img_array = np.array(img)
             img_array = np.expand_dims(img_array, axis=0)
             predictions = self.model.predict(img_array)

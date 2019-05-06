@@ -23,7 +23,7 @@ class LocationDetection:
             img_array = np.array(img)
             img_array = np.expand_dims(img_array, axis=0)
             predictions = self.trained_cnn.predict(img_array)
-            max_index = predictions.argmax(axis=1)
+            #max_index = predictions.argmax(axis=1)
             """text_string = "Cantine: {0:.2f}%, Elevators: {1:.2f}%, Exit: {2:.2f}%, Negatives: {3:.2f}%, Stairs: {4:.2f}%, Negatives: {5:.2f}%".format(result[0,0]*100.0, 
                                                                             result[0,1]*100.0,
                                                                             result[0,2]*100.0,
@@ -32,7 +32,7 @@ class LocationDetection:
                                                                             result[0,5]*100.0)
             print(text_string)
             print('predicted '+ max_index)"""
-            return max_index
+            return predictions
             #Returns max index of predictions
             #0=Cantine, 1=Elevators, 2=Exit, 3=Negatives, 4=Stairs, 5=Toilet
         
