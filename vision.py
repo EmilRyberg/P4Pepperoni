@@ -81,7 +81,7 @@ class VisionModule:
         width = 640
         height = 480
         image = np.zeros((height, width, 3), np.uint8)
-        predictions = np.zeros(6)
+        summed_predictions = None
         #Takes three images, checks for the most frequent location and returns that as the 'average location'
         for j in range(3):
             for i in range(60):
@@ -110,8 +110,11 @@ class VisionModule:
                         image.itemset((y, x, 2), values[index + 2])
                         index += 3
                 predicted_location = self.localisation_cnn.classify_image(image)
-                predictions[predicted_location] += 1 
-        average_prediction = predictions.argmax(axis=1)
+                if (j == 0):
+                    summed_predictions = predicted_location
+                else:
+                    summed_predictions = summed_predictions + predicted_location
+        average_prediction = summed_predictions.argmax(axis = 1)
         return average_prediction #Returns the most frequent observed location
 
     def exit_handler(self):
