@@ -1,6 +1,6 @@
 from movement import Movement
 from audio import SpeechRecognition
-from vision import VisionModule
+from vision import Vision
 from display import Display
 #import naoqi
 from naoqi import ALProxy
@@ -39,7 +39,7 @@ class Controller(object):
 
         self.movement = Movement(session)
         self.audio = SpeechRecognition(session, PEPPER_IP, PEPPER_PORT)
-        self.vision = VisionModule(session)
+        self.vision = Vision(session)
         self.display = Display(session)
 
         print "\n \n \n" #distance from tensorflow text

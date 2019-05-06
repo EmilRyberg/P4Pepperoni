@@ -5,7 +5,7 @@ import time
 import atexit
 import random
 
-class VisionModule:
+class Vision:
     session = None
     localisation_cnn = None
     object_detection = None
