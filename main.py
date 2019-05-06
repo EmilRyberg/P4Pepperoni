@@ -28,10 +28,9 @@ class Controller(object):
     def __init__(self):
         session = qi.Session()
         try:
-            session.connect("tcp://" + PEPPER_IP + ":" + str(PEPPER_PORT))
-            #app = qi.Application(["SayHi", "--qi-url=" + "tcp://" + PEPPER_IP + ":" + str(PEPPER_PORT)])
+            session.connect("tcp://" + PEPPER_IP + ":" + str(PEPPER_PORT)
         except RuntimeError:
-            print("session connect failed")
+            print("[ERROR] Session connect failed")
             sys.exit(1)
 
         self.autonomy = session.service("ALAutonomousLife")
@@ -39,7 +38,6 @@ class Controller(object):
 
         self.memory = session.service("ALMemory")
         self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
-        self.beep = ALProxy("ALAudioDevice", PEPPER_IP, PEPPER_PORT)
 
         self.movement = Movement(session)
         self.audio = SpeechRecognition(session, PEPPER_IP, PEPPER_PORT, self.proxy)
@@ -90,7 +88,7 @@ class Controller(object):
         print "\n STARTED MAIN FLOW \n"
         self.say_voiceline("Ready")
         self.audio_question = None
-        time.sleep(0.5)
+        time.sleep(0.1)
         while self.audio_question == None and not self.person_left_zone:
             self.wait_for_question()
         if not self.person_left_zone:
@@ -119,15 +117,7 @@ class Controller(object):
         question = None
         location = None
         success = None
-        #try:
         question, location, success = self.audio.listen()
-        #except Exception as e:
-            #print e
-            #self.beep.playSine(440, 60, 0, 0.1)
-            #time.sleep(0.2)
-            #self.beep.playSine(440, 60, 0, 0.1)
-            #sys.exit()
-
         print "[INFO] Speech recognition results: %s, %s, %s" % (question, location, success)
         if success:
             self.audio_success = True

@@ -18,34 +18,19 @@ class SpeechRecognition(object):
         self.session=session
 
         #Services
-        #self.memory = session.service("ALMemory")
         self.tts = session.service("ALTextToSpeech")
         self.asr = session.service("ALSpeechRecognition")
         self.motion_service = session.service("ALMotion")
-        #self.proxy = ALProxy("ALMemory", ip, port)
         self.proxy = proxy
-        #self.dialog_proxy = ALProxy("ALDialog", ip , port)
-        #self.auto_move = session.service("ALAutonomousLife")
         self.autonomous_life = ALProxy("ALAutonomousLife", ip, port)
-
-        #for subscriber, period, prec in self.asr.getSubscribersInfo():
-            #self.asr.unsubscribe(subscriber)
+        self.beep = ALProxy("ALAudioDevice", ip, port)
 
         print "INIT AUDIO"
-        #self.tts.setLanguage("Chinese")
-        #self.tts.say("hello")
-        #self.tts.setLanguage("English")
-        #self.tts.say("hello")
-
-
-        #Subscribing to event
-        #self.proxy.subscribeToEvent('WordRecognized', PEPPER_IP, 'wordRecognized')
         atexit.register(self.exit_handler)
 
         #Speech recognition configurations
         self.asr.pause(True)
         self.asr.removeAllContext()
-        #self.asr.pushContexts()
         self.asr.setVisualExpression(True)
         self.asr.setAudioExpression(True)
         self.asr.setLanguage("English")
@@ -59,41 +44,29 @@ class SpeechRecognition(object):
                 self.asr.setVocabulary(vocabulary, False)
             except Exception as e:
                 print "[ERROR] Can't set vocabulary"
-                print e
-                #self.dialog_proxy.setLanguage("Chinese")
+                self.error_beep()
+                #print e
                 if i < 1:
-                    #self.auto_move.setAutonomousAbilityEnabled("All", False)
                     self.autonomous_life.setState("disabled")
-                    #time.sleep(2)
-                    #self.motion_service.rest()
-                    #time.sleep(2)
-                    #self.motion_service.wakeUp()
-                    #time.sleep(2)
-                    #self.auto_move.setAutonomousAbilityEnabled("All", True)
-                    #time.sleep(2)
                     self.autonomous_life.setState("solitary")
                     #self.asr = None
                     #self.asr = session.service("ALSpeechRecognition")
                     self.asr.pause(True)
                     self.asr.removeAllContext()
                     time.sleep(1)
-                #self.dialog_proxy.setLanguage("English")
             else:
                 success = True
                 break
         if not success:
             print "[FATAL] Couldn't set vocabulary"
-            sys.exit()
-        time.sleep(3)
-        #self.asr.pause(False)
-
-    def __del__(self):
-        #self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
-        print "unsubscribed from wordsrecognized"
+            for i in range(3):
+                self.beep.playSine(440, 60, 0, 0.1)
+                time.sleep(0.1)
+            sys.exit(1)
 
     def listen(self):
         self.asr.pause(False)
-        asr_listen=''
+        asr_listen=None
 
         question=None
         location=None
@@ -101,7 +74,7 @@ class SpeechRecognition(object):
         random_id = "speech" + str(random.randint(0,100000))
         #Start the speech recognition engine
         self.asr.subscribe(random_id)
-        print("Speech recog is running")
+        print "[INFO] Speech recognition is running"
 
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
         success = False
@@ -112,21 +85,21 @@ class SpeechRecognition(object):
             try:
                 asr_listen = self.proxy.getData("WordRecognized")
             except Exception as e:
-                print e
-                asr_listen = ''
-            if asr_listen == None:
-                asr_listen = ''
-            if asr_listen != '' and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0:
-                success = True
-                self.proxy.removeData("WordRecognized") #clear buffer
-                break
+                print "[WARNING] Could not read WordRecognized"
+            else:
+                if asr_listen != None and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0:
+                    success = True
+                    try:
+                        self.proxy.removeData("WordRecognized") #clear buffer
+                    except Exception as e:
+                        print "[WARNING] Could not clear WordRecognized"
+                    break
 
         self.asr.unsubscribe(random_id)
 
 	    #If else statement that writes question and local to the corrosponding scenario
-        print("Data: %s" % asr_listen)
-
-        if asr_listen[0] == 'the stairs':
+        if asr_listen == None:  
+        elif asr_listen[0] == 'the stairs':
             question="localisation"
             location="stairs"
         elif asr_listen[0] == 'the bathroom' or asr_listen[0] == 'the toilet' or asr_listen[0] == 'the lavatory' or asr_listen[0] == 'the restroom':
@@ -141,24 +114,36 @@ class SpeechRecognition(object):
         elif asr_listen[0]=='the exit' or asr_listen[0] == 'can i leave' or asr_listen[0] == 'can i get out' or asr_listen[0] == 'can i get outside':
             question="localisation"
             location="exit"
-        elif asr_listen[0]=='through security' or asr_listen[0] == 'is this dangerous':
+        elif asr_listen[0]=='can i bring' or asr_listen[0] == 'can this go through' or asr_listen[0]=='security' or asr_listen[0]=='can i carry' or asr_listen[0]=='can i keep' or asr_listen[0]=='is this allowed' or asr_listen[0]=='am i allowed' or asr_listen[0]=='is this dangerous' or asr_listen[0]=='can i board the plane':
             question="object_detection"
+        elif:
+            print "[ERROR] Unknown phrase:" + asr_listen[0]
+            self.error_beep()
 
         self.asr.pause(True)
-        #self.asr.removeAllContext()
-        #self.asr.pause(False)
 
-        print "AUDIO LISTEN FINISHED"
+        print "[INFO] Speech recognition finished"
         return (question, location, success)
 
     def say(self, text):
         self.tts.say(text)
 
+    def ready_beep(self):
+        self.beep.playSine(1000, 40, 0, 0.1)
+        time.sleep(0.2)
+
+    def error_beep(self)
+        self.beep.playSine(880, 50, 0, 0.1)
+        time.sleep(0.1)
+        self.beep.playSine(440, 50, 0, 0.1)
+
+    def fatal_beep(self):
+        for i in range(3):
+            self.beep.playSine(440, 60, 0, 0.1)
+            time.sleep(0.1)
+
     def exit_handler(self):
-        #self.asr.pause(False)
-        #self.asr.unsubscribe("Speech_Question")
-        #self.proxy.unsubscribeToEvent("WordRecognized", "wordRecognized")
-        print "unsubscribed from wordsrecognized"
+        print "Exited Audio"
 
 """
 def main():
