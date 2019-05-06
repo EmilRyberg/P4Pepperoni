@@ -131,7 +131,7 @@ class SpeechRecognition(object):
         elif asr_listen[0]=='the exit' or asr_listen[0] == 'can i leave' or asr_listen[0] == 'can i get out' or asr_listen[0] == 'can i get outside':
             question="localisation"
             location="exit"
-        elif asr_listen[0]=='through security' or asr_listen[0] == 'is this dangerous':
+        elif asr_listen[0]=='can i bring' or asr_listen[0] == 'can this go through' or asr_listen[0]=='security' or asr_listen[0]=='can i carry' or asr_listen[0]=='can i keep' or asr_listen[0]=='is this allowed' or asr_listen[0]=='am i allowed' or asr_listen[0]=='is this dangerous' or asr_listen[0]=='can i board the plane':
             question="object_detection"
 
         self.asr.pause(True)
