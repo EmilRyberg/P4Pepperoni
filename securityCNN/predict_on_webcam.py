@@ -36,8 +36,8 @@ def main(model_name):
                                                                           predictions[0,1]*100.0)
         textStr2 = "NoObject: {0:.2f}%, NonDangerous: {1:.2f}%".format(predictions[0,2]*100.0,
                                                                           predictions[0,3]*100.0)
-        cv2.putText(croppedFrame, textStr, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 2, cv2.LINE_AA)
-        cv2.putText(croppedFrame, textStr2, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(croppedFrame, textStr, (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(croppedFrame, textStr2, (10, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1, cv2.LINE_AA)
 
 
         cv2.imshow("Capturing", croppedFrame)
