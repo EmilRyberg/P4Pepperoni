@@ -168,16 +168,19 @@ class Controller(object):
             for i in range(0, OBJECT_DETECTION_TRIES):
                 time.sleep(1.5)
                 result = self.vision.classify_object()
-                print "[INFO] Detection results: %i. (0 = dangerous, 1 = liquid, 2 = no object, 3 = non-dangerous)" % (result)
-                if result == 0:
+                #Class labels:  {'Cans': 0, 'Headphone': 1, 'Knife': 2, 'Laptop': 3, 'NoObject': 4, 'Phone': 5, 'Pistol': 6,
+        #'Scissors': 7, 'SodaPlasticBottle': 8, 'TransparentWaterBottle': 9}
+                print "[INFO] Detection results: %i. (0 = cans, 1 = headphone, 2 = knife, 3 = laptop, 4 = no object\n" +
+                "5 = phone, 6 = pistol, 7 = scissors, 8 = soda plastic bottle, 9 = water bottle)" % (result)
+                if result == 2 or result == 6 or result == 7:
                     self.say_voiceline("dangerous")
                     done = True
                     break
-                elif result == 3:
+                elif result == 1 or result == 3 or result == 5:
                     self.say_voiceline("nondangerous")
                     done = True
                     break
-                elif result == 1:
+                elif result == 0 or result == 8 or result == 9:
                     self.display.show_rules()
                     self.say_voiceline("liquid")
                     done=True
