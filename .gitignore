@@ -10,3 +10,5 @@
 *.pyc
 
 /securityCNN/*.hdf5
+
+object_detection_model\.hdf5
