@@ -218,7 +218,7 @@ class Controller(object):
         elif voiceline == "directions_exit":
             self.audio.say("You will find the nearest exit right around the corner")
         elif voiceline == "object_detection":
-            self.audio.say("Please hold the object in front of my camera for approximately 5 seconds")
+            self.audio.say("Please hold the object in front of my camera for approximately 5 seconds, while moving it slowly back and forth")
         elif voiceline == "dangerous":
             self.audio.say("I don't think this is allowed through security")
         elif voiceline == "nondangerous":

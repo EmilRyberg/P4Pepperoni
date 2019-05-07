@@ -37,7 +37,7 @@ class Vision:
         image = np.zeros((height, width, 3), np.uint8)
         summed_predictions = None
         
-        for j in range(3):
+        for j in range(10):
             for i in range(60):
                 # Getting an image
                 result = self.vid_service.getImageRemote(self.capture_device)
@@ -73,7 +73,7 @@ class Vision:
                 else:
                     summed_predictions = summed_predictions + result
         
-        print (summed_predictions.shape)
+        print "Summed predictions: %s" % (str(summed_predictions))
         return np.argmax(summed_predictions, axis = 1)
             
             
