@@ -76,6 +76,12 @@ class SpeechRecognition(object):
         self.asr.subscribe(random_id)
         print "[INFO] Speech recognition is running"
 
+        for i in range (20):
+            try:
+                self.proxy.removeData("WordRecognized")
+            except:
+                continue
+
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
         success = False
         i = 5
@@ -87,7 +93,7 @@ class SpeechRecognition(object):
             except Exception as e:
                 print "[WARNING] Could not read WordRecognized"
             else:
-                if asr_listen != None and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0:
+                if asr_listen != None and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0 and asr_listen != 'hello':
                     success = True
                     try:
                         self.proxy.removeData("WordRecognized") #clear buffer
@@ -98,27 +104,28 @@ class SpeechRecognition(object):
         self.asr.unsubscribe(random_id)
 
 	    #If else statement that writes question and local to the corrosponding scenario
-        if asr_listen == None:  
-        elif asr_listen[0] == 'the stairs':
-            question="localisation"
-            location="stairs"
-        elif asr_listen[0] == 'the bathroom' or asr_listen[0] == 'the toilet' or asr_listen[0] == 'the lavatory' or asr_listen[0] == 'the restroom':
-            question="localisation"
-            location="toilets"
-        elif asr_listen[0]=='the canteen' or asr_listen[0] == 'can i get food':
-            question="localisation"
-            location="canteen"
-        elif asr_listen[0]=='the elevator' or asr_listen[0] == 'the lift':
-            question="localisation"
-            location="elevator"
-        elif asr_listen[0]=='the exit' or asr_listen[0] == 'can i leave' or asr_listen[0] == 'can i get out' or asr_listen[0] == 'can i get outside':
-            question="localisation"
-            location="exit"
-        elif asr_listen[0]=='can i bring' or asr_listen[0] == 'can this go through' or asr_listen[0]=='security' or asr_listen[0]=='can i carry' or asr_listen[0]=='can i keep' or asr_listen[0]=='is this allowed' or asr_listen[0]=='am i allowed' or asr_listen[0]=='is this dangerous' or asr_listen[0]=='can i board the plane':
-            question="object_detection"
-        elif:
-            print "[ERROR] Unknown phrase:" + asr_listen[0]
-            self.error_beep()
+        if asr_listen != None and asr_listen != 'hello':
+            print asr_listen
+            if asr_listen[0] == 'the stairs':
+                question="localisation"
+                location="stairs"
+            elif asr_listen[0] == 'the bathroom' or asr_listen[0] == 'the toilet' or asr_listen[0] == 'the lavatory' or asr_listen[0] == 'the restroom':
+                question="localisation"
+                location="toilets"
+            elif asr_listen[0]=='the canteen' or asr_listen[0] == 'can i get food':
+                question="localisation"
+                location="canteen"
+            elif asr_listen[0]=='the elevator' or asr_listen[0] == 'the lift':
+                question="localisation"
+                location="elevator"
+            elif asr_listen[0]=='the exit' or asr_listen[0] == 'can i leave' or asr_listen[0] == 'can i get out' or asr_listen[0] == 'can i get outside':
+                question="localisation"
+                location="exit"
+            elif asr_listen[0]=='can i bring' or asr_listen[0] == 'can this go through' or asr_listen[0]=='security' or asr_listen[0]=='can i carry' or asr_listen[0]=='can i keep' or asr_listen[0]=='is this allowed' or asr_listen[0]=='am i allowed' or asr_listen[0]=='is this dangerous' or asr_listen[0]=='can i board the plane':
+                question="object_detection"
+            else:
+                print "[ERROR] Unknown phrase:" + asr_listen[0]
+                self.error_beep()
 
         self.asr.pause(True)
 
@@ -132,15 +139,17 @@ class SpeechRecognition(object):
         self.beep.playSine(1000, 40, 0, 0.1)
         time.sleep(0.2)
 
-    def error_beep(self)
-        self.beep.playSine(880, 50, 0, 0.1)
-        time.sleep(0.1)
-        self.beep.playSine(440, 50, 0, 0.1)
+    def error_beep(self):
+        for i in range (2):
+            self.beep.playSine(880, 30, 0, 0.1)
+            time.sleep(0.2)
+            self.beep.playSine(440, 30, 0, 0.1)
+            time.sleep(0.2)
 
     def fatal_beep(self):
-        for i in range(3):
+        for i in range(4):
             self.beep.playSine(440, 60, 0, 0.1)
-            time.sleep(0.1)
+            time.sleep(0.2)
 
     def exit_handler(self):
         print "Exited Audio"

@@ -11,6 +11,7 @@ import sys
 import time
 import atexit
 import random
+import threading
 
 PEPPER_IP = "pepper.local"
 PEPPER_PORT = 9559
@@ -28,9 +29,9 @@ class Controller(object):
     def __init__(self):
         session = qi.Session()
         try:
-            session.connect("tcp://" + PEPPER_IP + ":" + str(PEPPER_PORT)
-        except RuntimeError:
-            print("[ERROR] Session connect failed")
+            session.connect("tcp://" + PEPPER_IP + ":" + str(PEPPER_PORT))
+        except Exception as e:
+            print "[ERROR] Session connect failed"
             sys.exit(1)
 
         self.autonomy = session.service("ALAutonomousLife")
@@ -63,7 +64,7 @@ class Controller(object):
         self.person_left_zone = False
 
         self.engage = session.service("ALEngagementZones")
-        self.engage.setFirstLimitDistance(0.75)
+        self.engage.setFirstLimitDistance(1)
         self.engage.setSecondLimitDistance(1.5)
 
         atexit.register(self.exit_handler)
@@ -73,8 +74,9 @@ class Controller(object):
         print "[INFO] Number of people in zone 2: " + str(self.people_in_zone_2)
         print "[INFO] Number of people in zone 1: " + str(self.people_in_zone_1)
 
-        self.beep.playSine(1000, 40, 0, 0.1)
+        self.audio.beep.playSine(1000, 40, 0, 0.1)
         time.sleep(0.2)
+
 
     def main_flow(self, id, unused = None):
         print "[INFO] Person entered zone 1"
@@ -132,14 +134,15 @@ class Controller(object):
             self.say_voiceline("localisation", self.audio_location)
             self.movement.start_movement()
             localisation_success = False
-            for i in range(0, 60/15):
-                self.movement.turn(15, 600)
+            threading.Thread(target=self.movement.turn, args=(350, 15)).start()
+            while self.movement.move_done == False:
                 result = self.vision.find_location()
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                 print "[INFO] Detected location: " + keys.keys()[keys.values().index(result)]
                 if result == keys[self.audio_location]:
                     localisation_success = True
                     print "[INFO] Found location"
+                    self.movement.finish_movement()
                     break
             if localisation_success == True:
                 self.say_voiceline("localisation_success")
@@ -150,18 +153,18 @@ class Controller(object):
             self.movement.finish_movement()
 
         elif self.audio_question == "object_detection":
+            self.enable_autonomy(False)
             self.say_voiceline("object_detection")
             done = False
-            time.sleep(0.5)
-            self.enable_autonomy(False)
-            self.beep.playSine(1000, 40, 0, 0.1)
+            time.sleep(0)
             for i in range(0, OBJECT_DETECTION_TRIES):
-                time.sleep(1.5)
+                time.sleep(0.5)
+                self.audio.beep.playSine(1000, 40, 0, 0.1)
                 result = self.vision.classify_object()
                 #Class labels:  {'Cans': 0, 'Headphone': 1, 'Knife': 2, 'Laptop': 3, 'NoObject': 4, 'Phone': 5, 'Pistol': 6,
         #'Scissors': 7, 'SodaPlasticBottle': 8, 'TransparentWaterBottle': 9}
-                print "[INFO] Detection results: %i. (0 = cans, 1 = headphone, 2 = knife, 3 = laptop, 4 = no object\n" +
-                "5 = phone, 6 = pistol, 7 = scissors, 8 = soda plastic bottle, 9 = water bottle)" % (result)
+                print "[INFO] Detection results: %i. (0 = cans, 1 = headphone, 2 = knife, 3 = laptop, 4 = no object" % (result)
+                print "5 = phone, 6 = pistol, 7 = scissors, 8 = soda plastic bottle, 9 = water bottle)"
                 if result == 2 or result == 6 or result == 7:
                     self.say_voiceline("dangerous")
                     done = True
