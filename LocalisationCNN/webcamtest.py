@@ -13,7 +13,7 @@ def main(model_file_path):
             continue
         img = Image.fromarray(frame, 'RGB')
         resized = np.array(img.resize((128,96)))
-        resized = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
+        #resized = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
         resized = np.expand_dims(resized, axis=0)
         
         result = trained_cnn.predict(resized)
@@ -27,6 +27,7 @@ def main(model_file_path):
         cv2.putText(frame, textStr3, (10, 80), cv2.FONT_HERSHEY_DUPLEX, 0.4, (255, 0, 0), 1, cv2.LINE_AA)
 
         cv2.imshow("Capturing", frame)
+        cv2.imshow("Resized", np.squeeze(resized, axis = 0))
         key=cv2.waitKey(1)
         if key == ord('q'):
             break
