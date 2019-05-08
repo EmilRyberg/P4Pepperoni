@@ -24,7 +24,7 @@ def main(model_name):
 
         img = img.resize((200,200))
         img_array = np.array(img)
-        img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
+        #img_array = cv2.cvtColor(img_array, cv2.COLOR_BGR2RGB)
         img_array = np.expand_dims(img_array, axis=0)
 
         #Calling the predict method on model to predict 'me' on the image
@@ -44,6 +44,7 @@ def main(model_name):
             cv2.putText(cropped_frame, text_lines[i], (10, 20 + (i * 15)), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 0, 0), 1, cv2.LINE_AA)
 
         cv2.imshow("Capturing", cropped_frame)
+        cv2.imshow("Resized", np.squeeze(img_array, axis=0))
         key = cv2.waitKey(1)
         if key == ord('q'):
             break
