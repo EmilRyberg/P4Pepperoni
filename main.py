@@ -191,6 +191,14 @@ class Controller(object):
     def enable_autonomy(self, enable=True):
         self.autonomy.setAutonomousAbilityEnabled("All", enable)
 
+    def are_people_close(self):
+        self.people_in_zone_2=len(self.proxy.getData("EngagementZones/PeopleInZone2"))
+        self.people_in_zone_1=len(self.proxy.getData("EngagementZones/PeopleInZone1"))
+        if self.people_in_zone_1+self.people_in_zone_2:
+            return True
+        else:
+            return False
+
     def say_voiceline(self, voiceline, data = ""):
         if voiceline == "hello":
             #i = random.randint(0,3)
