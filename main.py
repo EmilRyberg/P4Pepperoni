@@ -52,6 +52,7 @@ class Controller(object):
         self.audio_success = None
 
         self.greet_time = time.time()
+        self.goodbye_enabled = True
 
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
@@ -91,11 +92,12 @@ class Controller(object):
         self.say_voiceline("Ready")
         self.audio_question = None
         time.sleep(0.1)
-        while self.audio_question == None and not self.person_left_zone:
+        while self.audio_question == None and self.are_people_close:
             self.wait_for_question()
-        if not self.person_left_zone:
+        if self.are_people_close:
+            self.goodbye_enabled = False
             self.respond()
-        self.person_left_zone = False
+            self.goodbye_enabled = True
 
     def greet(self, id, unused = None):
         print "[INFO] Person entered zone 2"
@@ -109,10 +111,11 @@ class Controller(object):
             self.greet_time = time.time()
 
     def goodbye(self,id):
-        if id == self.person_id:
+        if self.goodbye_enabled:
             self.say_voiceline("Goodbye")
-            print "[INFO] Person left zone"
-            #self.person_left_zone = True
+            print "[INFO] All zones empty"
+        else:
+            print "[INFO] Goodbye not enabled right now"
 
     def wait_for_question(self):
         self.audio_success = False

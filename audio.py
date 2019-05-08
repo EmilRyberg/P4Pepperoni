@@ -27,6 +27,7 @@ class SpeechRecognition(object):
 
         print "INIT AUDIO"
         atexit.register(self.exit_handler)
+        self.random_id = None
 
         #Speech recognition configurations
         self.asr.pause(True)
@@ -71,16 +72,18 @@ class SpeechRecognition(object):
         question=None
         location=None
 
-        random_id = "speech" + str(random.randint(0,100000))
+        self.random_id = "speech" + str(random.randint(0,100000))
         #Start the speech recognition engine
-        self.asr.subscribe(random_id)
+        self.asr.subscribe(self.random_id)
         print "[INFO] Speech recognition is running"
 
+        temp = time.time()
         for i in range (20):
             try:
                 self.proxy.removeData("WordRecognized")
             except:
                 continue
+        print "Wordrecognized clear took %s seconds" % time.time()-temp
 
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
         success = False
@@ -101,7 +104,8 @@ class SpeechRecognition(object):
                         print "[WARNING] Could not clear WordRecognized"
                     break
 
-        self.asr.unsubscribe(random_id)
+        self.asr.unsubscribe(self.random_id)
+        self.asr.pause(True)
 
 	    #If else statement that writes question and local to the corrosponding scenario
         if asr_listen != None and asr_listen != 'hello':
@@ -127,8 +131,6 @@ class SpeechRecognition(object):
                 print "[ERROR] Unknown phrase:" + asr_listen[0]
                 self.error_beep()
 
-        self.asr.pause(True)
-
         print "[INFO] Speech recognition finished"
         return (question, location, success)
 
@@ -152,6 +154,8 @@ class SpeechRecognition(object):
             time.sleep(0.2)
 
     def exit_handler(self):
+        self.asr.unsubscribe(self.random_id)
+        self.asr.pause(False)
         print "Exited Audio"
 
 """
