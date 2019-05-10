@@ -187,7 +187,8 @@ class Controller(object):
             if done == False:
                 self.say_voiceline("object_detection_failed")
             self.enable_autonomy(True)
-
+        elif self.audio_question == "identification":
+            self.say_voiceline("identification")
         self.is_running = False
         self.has_greeted = False
 
@@ -246,8 +247,8 @@ class Controller(object):
             self.audio.say("Please try again")
         elif voiceline == "object_detection_failed":
             self.audio.say("Please ask personnel")
-        elif voiceline == "":
-            self.audio.say("")
+        elif voiceline == "identification":
+            self.audio.say("I am the service robot Pepper. You can ask me to find the stairs, canteen, elevator, nearest exit and nearest toilet. I can also help you determine if you can bring a specific object through security")
         elif voiceline == "":
             self.audio.say("")
         elif voiceline == "":

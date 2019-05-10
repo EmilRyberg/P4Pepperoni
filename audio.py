@@ -127,6 +127,8 @@ class SpeechRecognition(object):
                 location="exit"
             elif asr_listen[0]=='can i bring' or asr_listen[0] == 'can this go through' or asr_listen[0]=='security' or asr_listen[0]=='can i carry' or asr_listen[0]=='can i keep' or asr_listen[0]=='is this allowed' or asr_listen[0]=='am i allowed' or asr_listen[0]=='is this dangerous' or asr_listen[0]=='can i board the plane':
                 question="object_detection"
+            elif asr_listen[0]=='who are you' or asr_listen[0] == 'what are you' or asr_listen[0] == 'what can you do':
+                question="identification"
             else:
                 print "[ERROR] Unknown phrase:" + asr_listen[0]
                 self.error_beep()
