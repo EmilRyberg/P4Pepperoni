@@ -33,6 +33,7 @@ class Movement(object):
         self.motion_service.setAngles("HeadYaw", 0, 0.1, async = True)
         self.motion_service.setAngles("HeadPitch", 0, 0.1, async = True)
         self.motion_service.moveInit()
+        self.do_move = True
 
 
     def turn(self, degrees, speed):
@@ -61,14 +62,26 @@ class Movement(object):
         time.sleep(0.5)
         while True:
             difference2 = abs(self.motion_service.getRobotPosition(False)[2]-start_angle)
-            print "angle difference: %s" % difference2
+            #print "current angle: %s" % self.motion_service.getRobotPosition(False)[2]
+            #print "angle difference: %s" % difference2
             if difference2 < difference1:
-                print "Did full turn"
-                self.do_move = False
+                #print "Did full turn"
+                #self.do_move = False
                 break
             else:
                 difference1 = difference2
             time.sleep(0.5)
+        while True:
+            difference2 = abs(self.motion_service.getRobotPosition(False)[2]-start_angle)
+            #print "current angle: %s" % self.motion_service.getRobotPosition(False)[2]
+            #print "angle difference: %s" % difference2
+            if difference2 > difference1:
+                print "Did full turn"
+                self.finish_movement()
+                break
+            else:
+                difference1 = difference2
+            time.sleep(0.5)        
 
     def point_at(self):
         direction = 0
@@ -151,32 +164,33 @@ if __name__=="__main__":
         print("wow")
         sys.exit(1)
 
-move = Movement(session)
+if __name__ == "__main__":
+    move = Movement(session)
 
-move.auto_move.setAutonomousAbilityEnabled("All",False)
-move.motion_service.setAngles("HeadYaw", 0, 0.1, async = True)
-move.motion_service.setAngles("HeadPitch", 0, 0.1, async = True)
-move.motion_service.moveInit()
+    move.auto_move.setAutonomousAbilityEnabled("All",False)
+    move.motion_service.setAngles("HeadYaw", 0, 0.1, async = True)
+    move.motion_service.setAngles("HeadPitch", 0, 0.1, async = True)
+    move.motion_service.moveInit()
 
-start_angle = move.motion_service.getRobotPosition(False)[2]
-if start_angle < 0:
-    start_angle += 6.28
-print "start angle %s" % start_angle
+    start_angle = move.motion_service.getRobotPosition(False)[2]
+    if start_angle < 0:
+        start_angle += 6.28
+    print "start angle %s" % start_angle
 
-current_angle = start_angle
-temp1 = 0
-temp2 = 0
+    current_angle = start_angle
+    temp1 = 0
+    temp2 = 0
 
-do_turn = True
+    do_turn = True
 
-while do_turn:
-    move.motion_service.moveTo(0,0,0.017*180, 12)
-    current_angle = move.motion_service.getRobotPosition(False)[2]
-    if current_angle < 0:
-        current_angle += 6.28
-    temp1 = current_angle-start_angle
-    print "turned so far %s" % turned_so_far  
-    print "current pos %s" % move.motion_service.getRobotPosition(False)
+    while do_turn:
+        move.motion_service.moveTo(0,0,0.017*180, 12)
+        current_angle = move.motion_service.getRobotPosition(False)[2]
+        if current_angle < 0:
+            current_angle += 6.28
+        temp1 = current_angle-start_angle
+        print "turned so far %s" % turned_so_far  
+        print "current pos %s" % move.motion_service.getRobotPosition(False)
 
 
 #    2 3 4 5 6 1 2 3 4 5

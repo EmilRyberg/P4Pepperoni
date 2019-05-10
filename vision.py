@@ -21,9 +21,9 @@ class Vision:
                 
         # subscribe to the top camera
         AL_kTopCamera = 0
-        AL_kQVGA = 1  # 320x240px
+        AL_kVGA = 2  # 640x480
         AL_kBGRColorSpace = 13
-        self.capture_device = self.vid_service.subscribeCamera(self.subscribeId, AL_kTopCamera, AL_kQVGA, AL_kBGRColorSpace, 10)
+        self.capture_device = self.vid_service.subscribeCamera(self.subscribeId, AL_kTopCamera, AL_kVGA, AL_kBGRColorSpace, 10)
         atexit.register(self.exit_handler)
     
     def __del__(self):
@@ -31,9 +31,9 @@ class Vision:
         print "unsubscribed from camera"
             
     def classify_object(self):
-        # creating an empty image of size 320x240
-        width = 320
-        height = 240
+        # creating an empty image of size 640x480
+        width = 640
+        height = 480
         image = np.zeros((height, width, 3), np.uint8)
         summed_predictions = None
         
@@ -78,9 +78,9 @@ class Vision:
             
             
     def find_location(self):
-        # creating an empty image of size 320x240
-        width = 320
-        height = 240
+        # creating an empty image of size 640x480
+        width = 640
+        height = 480
         image = np.zeros((height, width, 3), np.uint8)
         summed_predictions = None
         #Takes three images, checks for the most frequent location and returns that as the 'average location'

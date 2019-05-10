@@ -10,6 +10,8 @@ import atexit
 import inspect
 import random
 
+SPEECH_TRESHOLD = 0.3
+
 # Speech recognition
 class SpeechRecognition(object):
     session=None
@@ -19,6 +21,8 @@ class SpeechRecognition(object):
 
         #Services
         self.tts = session.service("ALTextToSpeech")
+        self.tts.setParameter("pitchShift", 1)
+        self.tts.setParameter("doubleVoice", 1.3)
         self.asr = session.service("ALSpeechRecognition")
         self.motion_service = session.service("ALMotion")
         self.proxy = proxy
@@ -83,7 +87,7 @@ class SpeechRecognition(object):
                 self.proxy.removeData("WordRecognized")
             except:
                 continue
-        print "Wordrecognized clear took %s seconds" % time.time()-temp
+        print "Wordrecognized clear took %s seconds" % (time.time()-temp)
 
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
         success = False
@@ -96,7 +100,7 @@ class SpeechRecognition(object):
             except Exception as e:
                 print "[WARNING] Could not read WordRecognized"
             else:
-                if asr_listen != None and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0 and asr_listen != 'hello':
+                if asr_listen != None and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > SPEECH_TRESHOLD and asr_listen != 'hello':
                     success = True
                     try:
                         self.proxy.removeData("WordRecognized") #clear buffer
