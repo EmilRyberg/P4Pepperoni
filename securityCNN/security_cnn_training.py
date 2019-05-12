@@ -148,6 +148,7 @@ def test_model(load_model_from_file = False, model_name = None):
     is_first_iter = True
     iteration = 1
     images_predicted = 0
+    incorrect_predictions = 0
     steps = test_set.samples/batch_size
     for X_batch, y_batch in test_set:
         current_batch_size = X_batch.shape[0]
@@ -172,6 +173,7 @@ def test_model(load_model_from_file = False, model_name = None):
                 plt.imshow(X_batch[i])
                 plt.title("P: {0}, T: {1}".format(prediction_class_name, true_class_name))
                 plt.show()
+                incorrect_predictions += 1
             #print(prediction_class_name)
         if (is_first_iter):
             y_true = y_batch.argmax(axis=1)
@@ -186,13 +188,15 @@ def test_model(load_model_from_file = False, model_name = None):
     y_predicted = y_predicted.reshape((-1,)).astype(np.int32)
     #print("y_true: ", y_true)
     #print("y_predicted: ", y_predicted)
-    print("Class labels: ", test_set.class_indices)
+    accuracy = 1. - (incorrect_predictions / images_predicted)
+    print ('Class labels: ', test_set.class_indices)
+    print ('Test accuracy: {0} ({1}/{2})'.format(accuracy, incorrect_predictions, images_predicted))
     global confusion_m
     confusion_m = confusion_matrix(y_true, y_predicted)
 
 def main():
-    #test_model(load_model_from_file = True, model_name = 'model17_checkpoints/model.36-0.91.hdf5')
-    train_model()
+    test_model(load_model_from_file = True, model_name = 'model21_checkpoints/model.73-0.93.hdf5')
+    #train_model()
     
 if __name__ == "__main__":
     main()
