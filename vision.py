@@ -37,7 +37,7 @@ class Vision:
         image = np.zeros((height, width, 3), np.uint8)
         summed_predictions = None
         
-        for j in range(10):
+        for j in range(11):
             for i in range(60):
                 # Getting an image
                 result = self.vid_service.getImageRemote(self.capture_device)

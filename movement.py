@@ -7,7 +7,7 @@ import sys
 import time
 import threading
 
-PEPPER_IP = "192.168.1.15"
+PEPPER_IP = "pepper.local"
 
 PEPPER_PORT = 9559
 
@@ -26,19 +26,62 @@ class Movement(object):
         self.perception = self.session.service("ALPeoplePerception")
         self.animation = self.session.service("ALAnimationPlayer")
 
+        self.do_move = False
         
     def start_movement(self):
-        self.auto_move.setAutonomousAbilityEnabled("All",False, async = True)
+        self.auto_move.setAutonomousAbilityEnabled("All",False)
         self.motion_service.setAngles("HeadYaw", 0, 0.1, async = True)
         self.motion_service.setAngles("HeadPitch", 0, 0.1, async = True)
+        self.motion_service.moveInit()
+        self.do_move = True
 
 
     def turn(self, degrees, speed):
-        time = degrees*0.0174533 / speed
-        self.motion_service.moveTo(0,0, degrees*0.0174533, time)
+        self.move_done = False
+        print "turning"
+        time = degrees / speed
+        self.motion_service.moveTo(0,0, 0.5*degrees*0.0174533, 0.5*time)
+        self.motion_service.moveTo(0,0, 0.5*degrees*0.0174533, 0.5*time)
+        print "turning done"
+        self.move_done = True
+
+    def continous_turn(self, speed):
+        time = 360 / speed
+        while self.do_move:
+            self.motion_service.moveTo(0,0,6.28, time)
 
     def finish_movement(self):
+        self.do_move = False
+        self.motion_service.stopMove()
         self.auto_move.setAutonomousAbilityEnabled("All", True)
+
+    def check_for_full_turn(self):
+        start_angle = self.motion_service.getRobotPosition(False)[2]
+        time.sleep(0.5)
+        difference1 = abs(self.motion_service.getRobotPosition(False)[2]-start_angle)
+        time.sleep(0.5)
+        while True:
+            difference2 = abs(self.motion_service.getRobotPosition(False)[2]-start_angle)
+            #print "current angle: %s" % self.motion_service.getRobotPosition(False)[2]
+            #print "angle difference: %s" % difference2
+            if difference2 < difference1:
+                #print "Did full turn"
+                #self.do_move = False
+                break
+            else:
+                difference1 = difference2
+            time.sleep(0.5)
+        while True:
+            difference2 = abs(self.motion_service.getRobotPosition(False)[2]-start_angle)
+            #print "current angle: %s" % self.motion_service.getRobotPosition(False)[2]
+            #print "angle difference: %s" % difference2
+            if difference2 > difference1:
+                print "Did full turn"
+                self.finish_movement()
+                break
+            else:
+                difference1 = difference2
+            time.sleep(0.5)        
 
     def point_at(self):
         direction = 0
@@ -120,3 +163,34 @@ if __name__=="__main__":
     except RuntimeError:
         print("wow")
         sys.exit(1)
+
+if __name__ == "__main__":
+    move = Movement(session)
+
+    move.auto_move.setAutonomousAbilityEnabled("All",False)
+    move.motion_service.setAngles("HeadYaw", 0, 0.1, async = True)
+    move.motion_service.setAngles("HeadPitch", 0, 0.1, async = True)
+    move.motion_service.moveInit()
+
+    start_angle = move.motion_service.getRobotPosition(False)[2]
+    if start_angle < 0:
+        start_angle += 6.28
+    print "start angle %s" % start_angle
+
+    current_angle = start_angle
+    temp1 = 0
+    temp2 = 0
+
+    do_turn = True
+
+    while do_turn:
+        move.motion_service.moveTo(0,0,0.017*180, 12)
+        current_angle = move.motion_service.getRobotPosition(False)[2]
+        if current_angle < 0:
+            current_angle += 6.28
+        temp1 = current_angle-start_angle
+        print "turned so far %s" % turned_so_far  
+        print "current pos %s" % move.motion_service.getRobotPosition(False)
+
+
+#    2 3 4 5 6 1 2 3 4 5

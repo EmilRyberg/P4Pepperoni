@@ -11,6 +11,7 @@ import sys
 import time
 import atexit
 import random
+import threading
 
 PEPPER_IP = "pepper.local"
 PEPPER_PORT = 9559
@@ -23,14 +24,15 @@ LIQUID_TRESHOLD = 0.5
 OBJECT_DETECTION_TRIES = 3
 
 GREET_TIMEOUT = 5
+GOODBYE_TIMEOUT = 5
 
 class Controller(object):
     def __init__(self):
         session = qi.Session()
         try:
-            session.connect("tcp://" + PEPPER_IP + ":" + str(PEPPER_PORT)
-        except RuntimeError:
-            print("[ERROR] Session connect failed")
+            session.connect("tcp://" + PEPPER_IP + ":" + str(PEPPER_PORT))
+        except Exception as e:
+            print "[ERROR] Session connect failed"
             sys.exit(1)
 
         self.autonomy = session.service("ALAutonomousLife")
@@ -51,6 +53,8 @@ class Controller(object):
         self.audio_success = None
 
         self.greet_time = time.time()
+        self.last_goodbye = 0
+        self.goodbye_enabled = True
 
         self.greet_subscriber = self.memory.subscriber("EngagementZones/PersonEnteredZone1")
         self.greet_subscriber.signal.connect(self.main_flow)
@@ -63,7 +67,7 @@ class Controller(object):
         self.person_left_zone = False
 
         self.engage = session.service("ALEngagementZones")
-        self.engage.setFirstLimitDistance(0.75)
+        self.engage.setFirstLimitDistance(1)
         self.engage.setSecondLimitDistance(1.5)
 
         atexit.register(self.exit_handler)
@@ -73,8 +77,9 @@ class Controller(object):
         print "[INFO] Number of people in zone 2: " + str(self.people_in_zone_2)
         print "[INFO] Number of people in zone 1: " + str(self.people_in_zone_1)
 
-        self.beep.playSine(1000, 40, 0, 0.1)
+        self.audio.beep.playSine(1000, 40, 0, 0.1)
         time.sleep(0.2)
+
 
     def main_flow(self, id, unused = None):
         print "[INFO] Person entered zone 1"
@@ -89,28 +94,32 @@ class Controller(object):
         self.say_voiceline("Ready")
         self.audio_question = None
         time.sleep(0.1)
-        while self.audio_question == None and not self.person_left_zone:
+        while self.audio_question == None and self.are_people_close:
             self.wait_for_question()
-        if not self.person_left_zone:
+        if self.are_people_close:
+            self.goodbye_enabled = False
             self.respond()
-        self.person_left_zone = False
+            self.goodbye_enabled = True
 
     def greet(self, id, unused = None):
         print "[INFO] Person entered zone 2"
-        if (time.time()-self.greet_time > GREET_TIMEOUT):
+        if time.time()-self.greet_time > GREET_TIMEOUT:
             self.has_greeted = False
-        if (self.is_running == False):
-            self.person_id = id
-            self.movement.salute()
-            self.say_voiceline("hello")
-            self.has_greeted = True
             self.greet_time = time.time()
+            if (self.is_running == False):
+                self.person_id = id
+                self.movement.salute()
+                self.say_voiceline("hello")
+                self.has_greeted = True
+                self.greet_time = time.time()
 
     def goodbye(self,id):
-        if id == self.person_id:
+        if self.goodbye_enabled and not self.are_people_close() and time.time()-self.last_goodbye > GOODBYE_TIMEOUT:
             self.say_voiceline("Goodbye")
-            print "[INFO] Person left zone"
-            #self.person_left_zone = True
+            self.last_goodbye = time.time()
+            print "[INFO] All zones empty"
+        else:
+            print "[INFO] Goodbye not enabled right now"
 
     def wait_for_question(self):
         self.audio_success = False
@@ -130,16 +139,18 @@ class Controller(object):
         if self.audio_question == "localisation":
             print "[INFO] Localising"
             self.say_voiceline("localisation", self.audio_location)
-            self.movement.start_movement()
             localisation_success = False
-            for i in range(0, 60/15):
-                self.movement.turn(15, 600)
+            self.movement.start_movement()
+            threading.Thread(target=self.movement.continous_turn, args=[15]).start()
+            threading.Thread(target=self.movement.check_for_full_turn).start()
+            while self.movement.do_move == True:
                 result = self.vision.find_location()
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                 print "[INFO] Detected location: " + keys.keys()[keys.values().index(result)]
                 if result == keys[self.audio_location]:
                     localisation_success = True
                     print "[INFO] Found location"
+                    self.movement.finish_movement()
                     break
             if localisation_success == True:
                 self.say_voiceline("localisation_success")
@@ -150,18 +161,21 @@ class Controller(object):
             self.movement.finish_movement()
 
         elif self.audio_question == "object_detection":
+            self.enable_autonomy(False)
             self.say_voiceline("object_detection")
             done = False
-            time.sleep(0.5)
-            self.enable_autonomy(False)
-            self.beep.playSine(1000, 40, 0, 0.1)
+            time.sleep(0)
             for i in range(0, OBJECT_DETECTION_TRIES):
-                time.sleep(1.5)
+                time.sleep(0.5)
+                self.audio.beep.playSine(1000, 40, 0, 0.1)
                 result = self.vision.classify_object()
                 #Class labels:  {'Cans': 0, 'Headphone': 1, 'Knife': 2, 'Laptop': 3, 'NoObject': 4, 'Phone': 5, 'Pistol': 6,
         #'Scissors': 7, 'SodaPlasticBottle': 8, 'TransparentWaterBottle': 9}
-                print "[INFO] Detection results: %i. (0 = cans, 1 = headphone, 2 = knife, 3 = laptop, 4 = no object\n" +
-                "5 = phone, 6 = pistol, 7 = scissors, 8 = soda plastic bottle, 9 = water bottle)" % (result)
+                object_keys = ["cans", "headphones", "knife", "laptop", "no object", "phone", "pistol", "scissors", "soda plastic bottle", "water bottle"]
+                #print "[INFO] Detection results: %i. (0 = cans, 1 = headphone, 2 = knife, 3 = laptop, 4 = no object" % (result)
+                #print "5 = phone, 6 = pistol, 7 = scissors, 8 = soda plastic bottle, 9 = water bottle)"
+                print "[INFO] Detection results: " + str(object_keys[int(result)])
+                """
                 if result == 2 or result == 6 or result == 7:
                     self.say_voiceline("dangerous")
                     done = True
@@ -175,17 +189,34 @@ class Controller(object):
                     self.say_voiceline("liquid")
                     done=True
                     break
+                """
+                if result != 4:
+                    self.say_voiceline(object_keys[int(result)])
+                    self.say_voiceline("if unsure")
+                    done = True
+                    if result == 0 or result == 8 or result == 9:
+                        self.display.show_rules()
+                    break
                 if done == False and i < OBJECT_DETECTION_TRIES:
                     self.say_voiceline("try_again")
             if done == False:
                 self.say_voiceline("object_detection_failed")
             self.enable_autonomy(True)
-
+        elif self.audio_question == "identification":
+            self.say_voiceline("identification")
         self.is_running = False
         self.has_greeted = False
 
     def enable_autonomy(self, enable=True):
         self.autonomy.setAutonomousAbilityEnabled("All", enable)
+
+    def are_people_close(self):
+        self.people_in_zone_2=len(self.proxy.getData("EngagementZones/PeopleInZone2"))
+        self.people_in_zone_1=len(self.proxy.getData("EngagementZones/PeopleInZone1"))
+        if self.people_in_zone_1+self.people_in_zone_2:
+            return True
+        else:
+            return False
 
     def say_voiceline(self, voiceline, data = ""):
         if voiceline == "hello":
@@ -218,7 +249,7 @@ class Controller(object):
         elif voiceline == "directions_exit":
             self.audio.say("You will find the nearest exit right around the corner")
         elif voiceline == "object_detection":
-            self.audio.say("Please hold the object in front of my camera for approximately 5 seconds, while moving it slowly back and forth")
+            self.audio.say("Please hold the object in front of my eyes for approximately 5 seconds, while moving it slowly back and forth")
         elif voiceline == "dangerous":
             self.audio.say("I don't think this is allowed through security")
         elif voiceline == "nondangerous":
@@ -231,16 +262,30 @@ class Controller(object):
             self.audio.say("Please try again")
         elif voiceline == "object_detection_failed":
             self.audio.say("Please ask personnel")
-        elif voiceline == "":
-            self.audio.say("")
-        elif voiceline == "":
-            self.audio.say("")
-        elif voiceline == "":
-            self.audio.say("")
-        elif voiceline == "":
-            self.audio.say("")
-        elif voiceline == "":
-            self.audio.say("")
+        elif voiceline == "identification":
+            self.audio.say("I am the service robot Pepper. You can ask me to find the stairs, canteen, elevator, nearest exit and nearest toilet. I can also help you determine if you can bring a specific object through security")
+        elif voiceline == "cans":
+            self.audio.say("I think this is a can. Please refer to the screen or ask personnel")
+        elif voiceline == "headphones":
+            self.audio.say("I think these are headphones, which are allowed")
+        elif voiceline == "knife":
+            self.audio.say("I think this is a knife, which is not allowed")
+        elif voiceline == "laptop":
+            self.audio.say("I think this is a laptop, which is alowed")
+        elif voiceline == "no object":
+            self.audio.say("I couldn't detect anything")
+        elif voiceline == "phone":
+            self.audio.say("I think this is a phone, which is allowed")
+        elif voiceline == "pistol":
+            self.audio.say("I think this is a firearm, which is definetely not allowed")
+        elif voiceline == "scissors":
+            self.audio.say("I think these are scissors, which are not allowed")
+        elif voiceline == "soda plastic bottle":
+            self.audio.say("i think this is a plastic soda bottle. Please refer to the screen or ask personnel")
+        elif voiceline == "water bottle":
+            self.audio.say("I think this is water bottle. Please refer to the screen or ask personnel")
+        elif voiceline == "if unsure":
+            self.audio.say("If you think my classification if wrong, please ask personnel")                                                            
         else:
             self.audio.say(voiceline)
 

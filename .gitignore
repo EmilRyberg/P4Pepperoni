@@ -1,5 +1,5 @@
 /dataset/*
-/localisation/dataset/*
+/LocalisationCNN/dataset/*
 /securityCNN/dataset/*
 /securityCNN/DatasetOriginal/*
 /securityCNN/*.h5
@@ -10,3 +10,7 @@
 *.pyc
 
 /securityCNN/*.hdf5
+
+object_detection_model\.hdf5
+
+localisation_cnn\.h5
