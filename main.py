@@ -143,9 +143,9 @@ class Controller(object):
             self.say_voiceline("localisation", self.audio_location)
             localisation_success = False
             self.movement.start_movement()
-            #threading.Thread(target=self.movement.continous_turn, args=[15]).start()
-            #threading.Thread(target=self.movement.check_for_full_turn).start()
-            while self.movement.do_move == True and False:
+            threading.Thread(target=self.movement.continous_turn, args=[15]).start()
+            threading.Thread(target=self.movement.check_for_full_turn).start()
+            while self.movement.do_move == True:
                 result = self.vision.find_location()
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                 print "[INFO] Detected location: " + keys.keys()[keys.values().index(result)]

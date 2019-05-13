@@ -121,7 +121,7 @@ class SpeechRecognition(object):
             if asr_listen[0] == '<...> stairs <...>' or asr_listen[0] =='stairs <...>' or asr_listen[0]=='<...> stairs':
                 question="localisation"
                 location="stairs"
-            elif asr_listen[0] == '<...> bathroom <...>' or asr_listen[0] == 'bathroom <...>' or asr_listen[0] == '<...> bathroom':
+            elif asr_listen[0] == '<...> toilet <...>' or asr_listen[0] == 'bathroom <...>' or asr_listen[0] == '<...> bathroom':
                 question="localisation"
                 location="toilets"
             elif asr_listen[0]=='<...> canteen <...>' or asr_listen[0] == 'canteen <...>' or asr_listen[0] == '<...> canteen':
@@ -133,9 +133,9 @@ class SpeechRecognition(object):
             elif asr_listen[0]=='<...> exit <...>' or asr_listen[0] == 'exit <...>' or asr_listen[0] == '<...> exit':
                 question="localisation"
                 location="exit"
-            elif asr_listen[0]=='<...> security <...>' or asr_listen[0] == '<...> security' or asr_listen[0] == 'security <...>' or asr_listen[0] == '<...> allowed <...>' or asr_listen[0] == 'allowed <...>' or asr_listen[0] == '<...> allowed' or asr_listen[0] == '<...> plane <...>' or asr_listen[0] == '<...> plane' or asr_listen[0] == 'plane <...>':
+            elif asr_listen[0]=='<...> security <...>' or asr_listen[0] == '<...> security' or asr_listen[0] == 'security <...>' or asr_listen[0] == '<...> allowed <...>' or asr_listen[0] == 'allowed <...>' or asr_listen[0] == '<...> allowed' or asr_listen[0] == '<...> airplane <...>' or asr_listen[0] == '<...> airplane' or asr_listen[0] == 'airplane <...>':
                 question="object_detection"
-            elif asr_listen[0]=='<...> you <...>' or asr_listen[0] == 'you <...>' or asr_listen[0] == '<...> you':
+            elif asr_listen[0]=='<...> what can you do <...>' or asr_listen[0] == 'what can you do <...>' or asr_listen[0] == '<...> what can you do' or asr_listen[0]=='<...> who are you <...>' or asr_listen[0] == 'who are you <...>' or asr_listen[0] == '<...> who are you' or asr_listen[0]=='<...> what are you <...>' or asr_listen[0] == 'what are you <...>' or asr_listen[0] == '<...> what are you':
                 question="identification"
             else:
                 print "[ERROR] Unknown phrase:" + asr_listen[0]
