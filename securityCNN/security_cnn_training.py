@@ -25,13 +25,16 @@ tensorflow_backend.set_session(session)
 classifier = Sequential()
 batch_size = 48
 image_size = (200, 200)
+model_checkpoint_folder = 'model24_checkpoints'
 
 train_datagen = ImageDataGenerator(rescale=1./255,
-                                   rotation_range=20,
+                                   rotation_range=120,
                                    shear_range=0.2,
-                                   zoom_range=0.2,
-                                   horizontal_flip=True,
-                                   fill_mode='nearest')
+                                   zoom_range=0.25,
+                                   #horizontal_flip=True,
+                                   fill_mode='nearest',
+                                   width_shift_range=0.25,
+                                   height_shift_range=0.25)
 
 validation_datagen = ImageDataGenerator(rescale = 1./255)
 
@@ -41,6 +44,7 @@ training_set = train_datagen.flow_from_directory('dataset/training_set',
                                                  target_size = image_size,
                                                  batch_size = batch_size,
                                                  class_mode = 'categorical')
+                                                 #save_to_dir = 'dataset/training_set_generated')
 
 validation_set = validation_datagen.flow_from_directory('dataset/validation_set',
                                             target_size = image_size,
@@ -56,27 +60,34 @@ confusion_m = np.zeros((4,4))
 
 def train_model():
     classifier.add(Conv2D(32, (3, 3), input_shape = (200, 200, 3)))
+    classifier.add(Conv2D(32, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
+    classifier.add(Conv2D(64, (3, 3)))
     classifier.add(Conv2D(64, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(64, (3, 3)))
+    #classifier.add(Conv2D(64, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(128, (3, 3)))
+    #classifier.add(Conv2D(128, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
         
     classifier.add(Flatten())
-
+    #classifier.add(Dropout(0.1))
+    
+    classifier.add(Dense(units = 1024))
+    classifier.add(Activation('relu'))
+    #classifier.add(Dropout(0.1))
     classifier.add(Dense(units = 1024)) 
     classifier.add(Activation('relu'))
-    classifier.add(Dense(units = 1024)) 
-    classifier.add(Activation('relu'))
+    #classifier.add(Dropout(0.1))
     classifier.add(Dense(units = 10, activation = 'softmax'))
     
     adam_optimizer = Adam(lr=0.001)
@@ -85,13 +96,13 @@ def train_model():
     classifier.compile(optimizer = adam_optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
     classifier.summary()
     
-    checkpoint_callback = ModelCheckpoint('model18_checkpoints/model.{epoch:02d}-{val_acc:.2f}.hdf5', monitor='val_acc', verbose=1, period=1, save_best_only=True)
+    checkpoint_callback = ModelCheckpoint(model_checkpoint_folder + '/model.{epoch:02d}-{val_acc:.4f}.hdf5', monitor='val_acc', verbose=1, period=1, save_best_only=True)
     #early_stopping_callback = EarlyStopping(monitor='val_loss', min_delta=0.005, patience=8, verbose=1, restore_best_weights=True)
     callbacks = [checkpoint_callback]
     
     history = classifier.fit_generator(training_set,
                              steps_per_epoch = training_set.samples/batch_size,
-                             epochs = 30,
+                             epochs = 80,
                              validation_data = validation_set,
                              validation_steps = validation_set.samples/batch_size,
                              callbacks = callbacks)
@@ -103,7 +114,9 @@ def train_model():
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
+    plt.savefig(model_checkpoint_folder + '/accuracy_history.png')
     plt.show()
+    
     # summarize history for loss
     plt.plot(history.history['loss'])
     plt.plot(history.history['val_loss'])
@@ -111,6 +124,7 @@ def train_model():
     plt.ylabel('loss')
     plt.xlabel('epoch')
     plt.legend(['train', 'validation'], loc='upper left')
+    plt.savefig(model_checkpoint_folder + '/loss_history.png')
     plt.show()
 
     score, acc = classifier.evaluate_generator(test_set, steps = test_set.samples/batch_size)
@@ -134,6 +148,7 @@ def test_model(load_model_from_file = False, model_name = None):
     is_first_iter = True
     iteration = 1
     images_predicted = 0
+    incorrect_predictions = 0
     steps = test_set.samples/batch_size
     for X_batch, y_batch in test_set:
         current_batch_size = X_batch.shape[0]
@@ -158,6 +173,7 @@ def test_model(load_model_from_file = False, model_name = None):
                 plt.imshow(X_batch[i])
                 plt.title("P: {0}, T: {1}".format(prediction_class_name, true_class_name))
                 plt.show()
+                incorrect_predictions += 1
             #print(prediction_class_name)
         if (is_first_iter):
             y_true = y_batch.argmax(axis=1)
@@ -172,12 +188,14 @@ def test_model(load_model_from_file = False, model_name = None):
     y_predicted = y_predicted.reshape((-1,)).astype(np.int32)
     #print("y_true: ", y_true)
     #print("y_predicted: ", y_predicted)
-    print("Class labels: ", test_set.class_indices)
+    accuracy = 1. - (incorrect_predictions / images_predicted)
+    print ('Class labels: ', test_set.class_indices)
+    print ('Test accuracy: {0} ({1}/{2})'.format(accuracy, incorrect_predictions, images_predicted))
     global confusion_m
     confusion_m = confusion_matrix(y_true, y_predicted)
 
 def main():
-    test_model(load_model_from_file = True, model_name = 'model17_checkpoints/model.36-0.91.hdf5')
+    test_model(load_model_from_file = True, model_name = 'model21_checkpoints/model.73-0.93.hdf5')
     #train_model()
     
 if __name__ == "__main__":

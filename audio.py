@@ -10,6 +10,8 @@ import atexit
 import inspect
 import random
 
+SPEECH_TRESHOLD = 0.3
+
 # Speech recognition
 class SpeechRecognition(object):
     session=None
@@ -19,6 +21,8 @@ class SpeechRecognition(object):
 
         #Services
         self.tts = session.service("ALTextToSpeech")
+        self.tts.setParameter("pitchShift", 1)
+        self.tts.setParameter("doubleVoice", 1.3)
         self.asr = session.service("ALSpeechRecognition")
         self.motion_service = session.service("ALMotion")
         self.proxy = proxy
@@ -27,6 +31,7 @@ class SpeechRecognition(object):
 
         print "INIT AUDIO"
         atexit.register(self.exit_handler)
+        self.random_id = None
 
         #Speech recognition configurations
         self.asr.pause(True)
@@ -71,16 +76,18 @@ class SpeechRecognition(object):
         question=None
         location=None
 
-        random_id = "speech" + str(random.randint(0,100000))
+        self.random_id = "speech" + str(random.randint(0,100000))
         #Start the speech recognition engine
-        self.asr.subscribe(random_id)
+        self.asr.subscribe(self.random_id)
         print "[INFO] Speech recognition is running"
 
+        temp = time.time()
         for i in range (20):
             try:
                 self.proxy.removeData("WordRecognized")
             except:
                 continue
+        print "Wordrecognized clear took %s seconds" % (time.time()-temp)
 
 	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
         success = False
@@ -93,7 +100,7 @@ class SpeechRecognition(object):
             except Exception as e:
                 print "[WARNING] Could not read WordRecognized"
             else:
-                if asr_listen != None and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > -2.0 and asr_listen != 'hello':
+                if asr_listen != None and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > SPEECH_TRESHOLD and asr_listen != 'hello':
                     success = True
                     try:
                         self.proxy.removeData("WordRecognized") #clear buffer
@@ -101,7 +108,8 @@ class SpeechRecognition(object):
                         print "[WARNING] Could not clear WordRecognized"
                     break
 
-        self.asr.unsubscribe(random_id)
+        self.asr.unsubscribe(self.random_id)
+        self.asr.pause(True)
 
 	    #If else statement that writes question and local to the corrosponding scenario
         if asr_listen != None and asr_listen != 'hello':
@@ -123,11 +131,11 @@ class SpeechRecognition(object):
                 location="exit"
             elif asr_listen[0]=='can i bring' or asr_listen[0] == 'can this go through' or asr_listen[0]=='security' or asr_listen[0]=='can i carry' or asr_listen[0]=='can i keep' or asr_listen[0]=='is this allowed' or asr_listen[0]=='am i allowed' or asr_listen[0]=='is this dangerous' or asr_listen[0]=='can i board the plane':
                 question="object_detection"
+            elif asr_listen[0]=='who are you' or asr_listen[0] == 'what are you' or asr_listen[0] == 'what can you do':
+                question="identification"
             else:
                 print "[ERROR] Unknown phrase:" + asr_listen[0]
                 self.error_beep()
-
-        self.asr.pause(True)
 
         print "[INFO] Speech recognition finished"
         return (question, location, success)
@@ -152,6 +160,8 @@ class SpeechRecognition(object):
             time.sleep(0.2)
 
     def exit_handler(self):
+        self.asr.unsubscribe(self.random_id)
+        self.asr.pause(False)
         print "Exited Audio"
 
 """
