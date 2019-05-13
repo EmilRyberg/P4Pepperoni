@@ -22,6 +22,7 @@ class ObjectDetection:
 
             img = img.resize((200,200))
             img_array = np.array(img)
+            cv2.imshow("Resized", img_array)
             img_array = np.expand_dims(img_array, axis=0)
             predictions = self.model.predict(img_array)
             return predictions
