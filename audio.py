@@ -46,7 +46,7 @@ class SpeechRecognition(object):
         success = False
         for i in range(0,2):
             try:
-                self.asr.setVocabulary(vocabulary, False)
+                self.asr.setVocabulary(vocabulary, True)
             except Exception as e:
                 print "[ERROR] Can't set vocabulary"
                 self.error_beep()
@@ -114,24 +114,24 @@ class SpeechRecognition(object):
 	    #If else statement that writes question and local to the corrosponding scenario
         if asr_listen != None and asr_listen != 'hello':
             print asr_listen
-            if asr_listen[0] == 'the stairs':
+            if asr_listen[0] == '<...> stairs <...>' or asr_listen[0] =='stairs <...>' or asr_listen[0]=='<...> stairs':
                 question="localisation"
                 location="stairs"
-            elif asr_listen[0] == 'the bathroom' or asr_listen[0] == 'the toilet' or asr_listen[0] == 'the lavatory' or asr_listen[0] == 'the restroom':
+            elif asr_listen[0] == '<...> bathroom <...>' or asr_listen[0] == 'bathroom <...>' or asr_listen[0] == '<...> bathroom':
                 question="localisation"
                 location="toilets"
-            elif asr_listen[0]=='the canteen' or asr_listen[0] == 'can i get food':
+            elif asr_listen[0]=='<...> canteen <...>' or asr_listen[0] == 'canteen <...>' or asr_listen[0] == '<...> canteen':
                 question="localisation"
                 location="canteen"
-            elif asr_listen[0]=='the elevator' or asr_listen[0] == 'the lift':
+            elif asr_listen[0]=='<...> elevator <...>' or asr_listen[0] == 'elevator <...>' or asr_listen[0] == '<...> elevator' :
                 question="localisation"
                 location="elevator"
-            elif asr_listen[0]=='the exit' or asr_listen[0] == 'can i leave' or asr_listen[0] == 'can i get out' or asr_listen[0] == 'can i get outside':
+            elif asr_listen[0]=='<...> exit <...>' or asr_listen[0] == 'exit <...>' or asr_listen[0] == '<...> exit':
                 question="localisation"
                 location="exit"
-            elif asr_listen[0]=='can i bring' or asr_listen[0] == 'can this go through' or asr_listen[0]=='security' or asr_listen[0]=='can i carry' or asr_listen[0]=='can i keep' or asr_listen[0]=='is this allowed' or asr_listen[0]=='am i allowed' or asr_listen[0]=='is this dangerous' or asr_listen[0]=='can i board the plane':
+            elif asr_listen[0]=='<...> security <...>' or asr_listen[0] == '<...> security' or asr_listen[0] == 'security <...>' or asr_listen[0] == '<...> allowed <...>' or asr_listen[0] == 'allowed <...>' or asr_listen[0] == '<...> allowed' or asr_listen[0] == '<...> plane <...>' or asr_listen[0] == '<...> plane' or asr_listen[0] == 'plane <...>':
                 question="object_detection"
-            elif asr_listen[0]=='who are you' or asr_listen[0] == 'what are you' or asr_listen[0] == 'what can you do':
+            elif asr_listen[0]=='<...> you <...>' or asr_listen[0] == 'you <...>' or asr_listen[0] == '<...> you':
                 question="identification"
             else:
                 print "[ERROR] Unknown phrase:" + asr_listen[0]
