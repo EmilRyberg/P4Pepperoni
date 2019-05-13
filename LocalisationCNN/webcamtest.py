@@ -2,6 +2,7 @@ import cv2
 from PIL import Image
 import numpy as np
 from keras.models import load_model
+import argparse
 
 def main(model_file_path):
     trained_cnn = load_model(model_file_path)
@@ -35,4 +36,9 @@ def main(model_file_path):
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    main('localisation_cnn.h5')
+    parser = argparse.ArgumentParser(description='Predicts on webcam')
+    parser.add_argument('model', type=str,
+                       help='the model to use for detecting objects')
+    
+    args = parser.parse_args()
+    main(args.model)
