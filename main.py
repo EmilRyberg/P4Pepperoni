@@ -37,6 +37,7 @@ class Controller(object):
 
         self.autonomy = session.service("ALAutonomousLife")
         self.autonomy.setAutonomousAbilityEnabled("All", True)
+        self.basic_awareness = session.service("ALBasicAwareness")
 
         self.memory = session.service("ALMemory")
         self.proxy = ALProxy("ALMemory", PEPPER_IP, PEPPER_PORT)
@@ -45,6 +46,8 @@ class Controller(object):
         self.audio = SpeechRecognition(session, PEPPER_IP, PEPPER_PORT, self.proxy)
         self.vision = Vision(session)
         self.display = Display(session)
+
+        self.basic_awareness.setStimulusDetectionEnabled("Touch", False)
 
         print "\n \n \n" #distance from tensorflow text
 
@@ -86,7 +89,6 @@ class Controller(object):
         if (self.is_running):
             print "[WARNING] Main is already running"
             return
-        self.person_id = id
         self.is_running = True
         if self.has_greeted == False:
             self.greet(id)
@@ -94,7 +96,7 @@ class Controller(object):
         self.say_voiceline("Ready")
         self.audio_question = None
         time.sleep(0.1)
-        while self.audio_question == None and self.are_people_close:
+        while self.audio_question == None and self.are_people_close():
             self.wait_for_question()
         if self.are_people_close:
             self.goodbye_enabled = False
@@ -107,9 +109,9 @@ class Controller(object):
             self.has_greeted = False
             self.greet_time = time.time()
             if (self.is_running == False):
-                self.person_id = id
                 self.movement.salute()
                 self.say_voiceline("hello")
+                print "SAID HELLO " + str(time.time())
                 self.has_greeted = True
                 self.greet_time = time.time()
 
@@ -141,9 +143,9 @@ class Controller(object):
             self.say_voiceline("localisation", self.audio_location)
             localisation_success = False
             self.movement.start_movement()
-            threading.Thread(target=self.movement.continous_turn, args=[15]).start()
-            threading.Thread(target=self.movement.check_for_full_turn).start()
-            while self.movement.do_move == True:
+            #threading.Thread(target=self.movement.continous_turn, args=[15]).start()
+            #threading.Thread(target=self.movement.check_for_full_turn).start()
+            while self.movement.do_move == True and False:
                 result = self.vision.find_location()
                 keys = {"canteen":0, "elevator":1, "exit":2, "negative":3, "stairs":4, "toilets":5}
                 print "[INFO] Detected location: " + keys.keys()[keys.values().index(result)]
@@ -263,7 +265,10 @@ class Controller(object):
         elif voiceline == "object_detection_failed":
             self.audio.say("Please ask personnel")
         elif voiceline == "identification":
-            self.audio.say("I am the service robot Pepper. You can ask me to find the stairs, canteen, elevator, nearest exit and nearest toilet. I can also help you determine if you can bring a specific object through security")
+            self.audio.say("I am the service robot Pepper.") 
+            self.audio.say("You can ask me to find the stairs, canteen, elevator, nearest exit and nearest toilet.")
+            self.audio.say("I can also help you determine if you can bring a specific object through security")
+            time.sleep(1)
         elif voiceline == "cans":
             self.audio.say("I think this is a can. Please refer to the screen or ask personnel")
         elif voiceline == "headphones":

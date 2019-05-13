@@ -22,7 +22,7 @@ class SpeechRecognition(object):
         #Services
         self.tts = session.service("ALTextToSpeech")
         self.tts.setParameter("pitchShift", 1)
-        self.tts.setParameter("doubleVoice", 1.3)
+        self.tts.setParameter("doubleVoice", 1.2)
         self.asr = session.service("ALSpeechRecognition")
         self.motion_service = session.service("ALMotion")
         self.proxy = proxy
@@ -69,6 +69,8 @@ class SpeechRecognition(object):
                 time.sleep(0.1)
             sys.exit(1)
 
+
+
     def listen(self):
         self.asr.pause(False)
         asr_listen=None
@@ -79,6 +81,8 @@ class SpeechRecognition(object):
         self.random_id = "speech" + str(random.randint(0,100000))
         #Start the speech recognition engine
         self.asr.subscribe(self.random_id)
+
+
         print "[INFO] Speech recognition is running"
 
         temp = time.time()
