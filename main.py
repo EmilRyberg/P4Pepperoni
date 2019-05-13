@@ -239,7 +239,7 @@ class Controller(object):
         elif voiceline == "localisation_success":
             self.audio.say("I found it")
         elif voiceline == "localisation_failed":
-            self.audio.say("Sorry, I couldn't find it")
+            self.audio.say("Sorry, I couldn't find it. Please ask personnel.")
         elif voiceline == "directions_stairs":
             self.audio.say("You will find the stairs right over there, by the tree")
         elif voiceline == "directions_canteen":
@@ -252,6 +252,7 @@ class Controller(object):
             self.audio.say("You will find the nearest exit right around the corner")
         elif voiceline == "object_detection":
             self.audio.say("Please hold the object in front of my eyes for approximately 5 seconds, while moving it slowly back and forth")
+            #self.audio.say("Do the thing, oh yeah.")
         elif voiceline == "dangerous":
             self.audio.say("I don't think this is allowed through security")
         elif voiceline == "nondangerous":
@@ -276,19 +277,19 @@ class Controller(object):
         elif voiceline == "knife":
             self.audio.say("I think this is a knife, which is not allowed")
         elif voiceline == "laptop":
-            self.audio.say("I think this is a laptop, which is alowed")
+            self.audio.say("I think this is a laptop, which is allowed")
         elif voiceline == "no object":
             self.audio.say("I couldn't detect anything")
         elif voiceline == "phone":
             self.audio.say("I think this is a phone, which is allowed")
         elif voiceline == "pistol":
-            self.audio.say("I think this is a firearm, which is definetely not allowed")
+            self.audio.say("I think this is a firearm, which is definitely not allowed")
         elif voiceline == "scissors":
             self.audio.say("I think these are scissors, which are not allowed")
         elif voiceline == "soda plastic bottle":
             self.audio.say("i think this is a plastic soda bottle. Please refer to the screen or ask personnel")
         elif voiceline == "water bottle":
-            self.audio.say("I think this is water bottle. Please refer to the screen or ask personnel")
+            self.audio.say("I think this is a water bottle. Please refer to the screen or ask personnel")
         elif voiceline == "if unsure":
             self.audio.say("If you think my classification if wrong, please ask personnel")                                                            
         else:

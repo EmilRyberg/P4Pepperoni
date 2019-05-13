@@ -164,7 +164,7 @@ class SpeechRecognition(object):
             time.sleep(0.2)
 
     def exit_handler(self):
-        self.asr.unsubscribe(self.random_id)
+        self.asr.unsubscribe(str(self.random_id))
         self.asr.pause(False)
         print "Exited Audio"
 
