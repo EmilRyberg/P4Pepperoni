@@ -84,7 +84,7 @@ class Controller(object):
         time.sleep(0.2)
 
 
-    def main_flow(self, id, unused = None):
+    def main_flow(self, unused = None):
         print "[INFO] Person entered zone 1"
         if (self.is_running):
             print "[WARNING] Main is already running"
@@ -93,15 +93,17 @@ class Controller(object):
         if self.has_greeted == False:
             self.greet(id)
         print "\n STARTED MAIN FLOW \n"
-        self.say_voiceline("Ready")
+        self.say_voiceline("How can I help?")
         self.audio_question = None
         time.sleep(0.1)
         while self.audio_question == None and self.are_people_close():
             self.wait_for_question()
-        if self.are_people_close:
+        if self.are_people_close():
             self.goodbye_enabled = False
             self.respond()
             self.goodbye_enabled = True
+        else:
+            self.is_running = False
 
     def greet(self, id, unused = None):
         print "[INFO] Person entered zone 2"
@@ -207,6 +209,8 @@ class Controller(object):
         elif self.audio_question == "identification":
             self.say_voiceline("identification")
         self.is_running = False
+        if self.are_people_close():
+            self.main_flow()
         self.has_greeted = False
 
     def enable_autonomy(self, enable=True):
@@ -222,16 +226,7 @@ class Controller(object):
 
     def say_voiceline(self, voiceline, data = ""):
         if voiceline == "hello":
-            #i = random.randint(0,3)
-            i = 0
-            if i == 0:
-                self.audio.say("Hello")
-            elif i == 1:
-                self.audio.say("Fuck off")
-            elif i == 2:
-                self.audio.say("Move away, cunt")
-            elif i == 3:
-                self.audio.say("Retard")
+            self.audio.say("Hello")
         elif voiceline == "audio_failed":
             self.audio.say("Sorry, I didn't get your question")
         elif voiceline == "localisation":
@@ -252,7 +247,6 @@ class Controller(object):
             self.audio.say("You will find the nearest exit right around the corner")
         elif voiceline == "object_detection":
             self.audio.say("Please hold the object in front of my eyes for approximately 5 seconds, while moving it slowly back and forth")
-            #self.audio.say("Do the thing, oh yeah.")
         elif voiceline == "dangerous":
             self.audio.say("I don't think this is allowed through security")
         elif voiceline == "nondangerous":
@@ -266,6 +260,7 @@ class Controller(object):
         elif voiceline == "object_detection_failed":
             self.audio.say("Please ask personnel")
         elif voiceline == "identification":
+            print "AAAAAAAAAAAAAAAAAAAAAAA"
             self.audio.say("I am the service robot Pepper.") 
             self.audio.say("You can ask me to find the stairs, canteen, elevator, nearest exit and nearest toilet.")
             self.audio.say("I can also help you determine if you can bring a specific object through security")
@@ -283,15 +278,15 @@ class Controller(object):
         elif voiceline == "phone":
             self.audio.say("I think this is a phone, which is allowed")
         elif voiceline == "pistol":
-            self.audio.say("I think this is a firearm, which is definitely not allowed")
+            self.audio.say("I think this is a gun, which is definitely not allowed")
         elif voiceline == "scissors":
-            self.audio.say("I think these are scissors, which are not allowed")
+            self.audio.say("I think this is a scissor, which is not allowed")
         elif voiceline == "soda plastic bottle":
             self.audio.say("i think this is a plastic soda bottle. Please refer to the screen or ask personnel")
         elif voiceline == "water bottle":
             self.audio.say("I think this is a water bottle. Please refer to the screen or ask personnel")
         elif voiceline == "if unsure":
-            self.audio.say("If you think my classification if wrong, please ask personnel")                                                            
+            self.audio.say("If you think my guess is wrong, please ask personnel")                                                            
         else:
             self.audio.say(voiceline)
 
