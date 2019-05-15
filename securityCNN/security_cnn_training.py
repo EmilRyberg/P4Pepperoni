@@ -168,7 +168,6 @@ def test_model(load_model_from_file = False, model_name = None):
                 plt.title("P: {0}, T: {1}".format(prediction_class_name, true_class_name))
                 plt.show()
                 incorrect_predictions += 1
-            #print(prediction_class_name)
         if (is_first_iter):
             y_true = y_batch.argmax(axis=1)
             y_predicted = y_batch_predicted
@@ -180,8 +179,6 @@ def test_model(load_model_from_file = False, model_name = None):
         iteration += 1
         print('Images predicted: ', images_predicted)
     y_predicted = y_predicted.reshape((-1,)).astype(np.int32)
-    #print("y_true: ", y_true)
-    #print("y_predicted: ", y_predicted)
     accuracy = 1. - (incorrect_predictions / images_predicted)
     print ('Class labels: ', test_set.class_indices)
     print ('Test accuracy: {0} ({1}/{2})'.format(accuracy, incorrect_predictions, images_predicted))
