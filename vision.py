@@ -37,9 +37,9 @@ class Vision:
         image = np.zeros((height, width, 3), np.uint8)
         summed_predictions = None
         
-        for j in range(11):
-            for i in range(60):
-                # Getting an image
+        for j in range(11): #We take 11 images, in order to predict whatever predictions occurs the most imtes
+            for i in range(60): #Retries up to 60 times to get an image from Pepper
+                # Getting an image remotely from Pepper
                 result = self.vid_service.getImageRemote(self.capture_device)
                 if result != None:
                     break
@@ -51,8 +51,7 @@ class Vision:
             elif result[6] == None:
                 print('no image data string.')
             else:
-                # Not sure if below is useful, test.
-                #translate value to mat
+                # converts the data into a numpy array
                 values = map(ord, str(bytearray(result[6])))
                 index = 0
                 for y in range(0, height):
@@ -62,19 +61,21 @@ class Vision:
                         image.itemset((y, x, 2), values[index + 2])
                         index += 3
                 
-                #now the image will be cropped to be square (since CNN is trained on square images,
+                # now the image will be cropped to be square (since CNN is trained on square images,
                 # and borders are not important anyways)
                 width_height_difference = width - height
                 width_to_cut = int(width_height_difference / 2)
                 croppedImage = image[0:image.shape[0], width_to_cut:image.shape[1]-width_to_cut]
                 result = self.object_detection.predict_certainties(croppedImage)
-                if (j == 0):
+
+                # add the prediction vector to the previous predictions
+                if (j == 0): 
                     summed_predictions = result
                 else:
                     summed_predictions = summed_predictions + result
         
-        print "Summed predictions: %s" % (str(summed_predictions))
-        return np.argmax(summed_predictions, axis = 1)
+        print "Summed predictions: %s" % (str(summed_predictions)) # Used for debugging
+        return np.argmax(summed_predictions, axis = 1) # Return the most occuring prediction in the summed predictions
             
             
     def find_location(self):

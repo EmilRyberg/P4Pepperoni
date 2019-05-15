@@ -3,7 +3,6 @@
 from keras import models
 from PIL import Image
 import numpy as np
-import cv2
 import tensorflow as tf
 
 class ObjectDetection:
@@ -22,8 +21,6 @@ class ObjectDetection:
 			#Resizes image, into array, predicts
             img = img.resize((200,200))
             img_array = np.array(img)
-            #cv2.imshow("Resized", img_array)
-            #cv2.waitKey(0)
             img_array = np.expand_dims(img_array, axis=0)
             predictions = self.model.predict(img_array)
             return predictions
