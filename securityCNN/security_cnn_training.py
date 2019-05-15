@@ -25,10 +25,10 @@ tensorflow_backend.set_session(session)
 classifier = Sequential()
 batch_size = 48
 image_size = (200, 200)
-model_checkpoint_folder = 'model24_checkpoints'
+model_checkpoint_folder = 'model25_checkpoints'
 
 train_datagen = ImageDataGenerator(rescale=1./255,
-                                   rotation_range=120,
+                                   rotation_range=60,
                                    shear_range=0.2,
                                    zoom_range=0.25,
                                    #horizontal_flip=True,
@@ -56,43 +56,38 @@ test_set = test_datagen.flow_from_directory('dataset/test_set',
                                             batch_size = batch_size,
                                             class_mode = 'categorical')
 
-confusion_m = np.zeros((4,4))
+confusion_m = None #Will contain the confusion matrix if test_model() is run (is global to be inspectable in editors)
 
 def train_model():
     classifier.add(Conv2D(32, (3, 3), input_shape = (200, 200, 3)))
-    classifier.add(Conv2D(32, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(64, (3, 3)))
-    classifier.add(Conv2D(64, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(64, (3, 3)))
-    #classifier.add(Conv2D(64, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
     
     classifier.add(Conv2D(128, (3, 3)))
-    #classifier.add(Conv2D(128, (3, 3)))
     classifier.add(Activation('relu'))
     classifier.add(MaxPooling2D(pool_size = (2, 2)))
         
     classifier.add(Flatten())
-    #classifier.add(Dropout(0.1))
+    classifier.add(Dropout(0.1))
     
     classifier.add(Dense(units = 1024))
     classifier.add(Activation('relu'))
-    #classifier.add(Dropout(0.1))
+    classifier.add(Dropout(0.1))
     classifier.add(Dense(units = 1024)) 
     classifier.add(Activation('relu'))
-    #classifier.add(Dropout(0.1))
+    classifier.add(Dropout(0.1))
     classifier.add(Dense(units = 10, activation = 'softmax'))
     
     adam_optimizer = Adam(lr=0.001)
     
-    # Compiling the CNN
     classifier.compile(optimizer = adam_optimizer, loss = 'categorical_crossentropy', metrics = ['accuracy'])
     classifier.summary()
     
@@ -107,7 +102,7 @@ def train_model():
                              validation_steps = validation_set.samples/batch_size,
                              callbacks = callbacks)
     
-        # summarize history for accuracy
+    # summarize history for accuracy
     plt.plot(history.history['acc'])
     plt.plot(history.history['val_acc'])
     plt.title('model accuracy')
@@ -129,7 +124,6 @@ def train_model():
 
     score, acc = classifier.evaluate_generator(test_set, steps = test_set.samples/batch_size)
     print('Test accuracy:', acc)
-    #classifier.save('model14_checkpoints/model.hdf5')
     
 def view_training_images():
     for X_batch, y_batch in training_set:
@@ -195,6 +189,7 @@ def test_model(load_model_from_file = False, model_name = None):
     confusion_m = confusion_matrix(y_true, y_predicted)
 
 def main():
+	#Uncomment either function to test or train model
     test_model(load_model_from_file = True, model_name = 'model21_checkpoints/model.73-0.93.hdf5')
     #train_model()
     
