@@ -40,6 +40,7 @@ class Movement(object):
         self.move_done = False
         print "turning"
         time = degrees / speed
+		#angle is input as radians
         self.motion_service.moveTo(0,0, 0.5*degrees*0.0174533, 0.5*time)
         self.motion_service.moveTo(0,0, 0.5*degrees*0.0174533, 0.5*time)
         print "turning done"
@@ -56,6 +57,7 @@ class Movement(object):
         self.auto_move.setAutonomousAbilityEnabled("All", True)
 
     def check_for_full_turn(self):
+		#the True/False parameter is for using MRE sensor values
         start_angle = self.motion_service.getRobotPosition(False)[2]
         time.sleep(0.5)
         difference1 = abs(self.motion_service.getRobotPosition(False)[2]-start_angle)
@@ -88,6 +90,7 @@ class Movement(object):
         self.motion_service.wakeUp(_async=True)
         self.auto_move.setAutonomousAbilityEnabled("All",False)
 
+		#Set times and stiffness
         joint_times=[[1.0], [2.0], [2.0]]
         is_absolute = True
         stiffness_lists=[[0.3],[0.3], [0.3]]
@@ -99,6 +102,7 @@ class Movement(object):
 
         joint_list=[["RWristYaw", "RShoulderPitch", "RShoulderRoll"], ["LWristYaw", "LShoulderPtich", "LShoulderRoll"]]
 
+		#Start Trajectory 
         self.motion_service.stiffnessInterpolation(joint_list[direction], stiffness_lists, stiff_times,_async=True)
         self.motion_service.angleInterpolation(joint_list[direction], [[-0.87],[-0.06], [0.24]], joint_times, is_absolute, _async=True)
         self.motion_service.stiffnessInterpolation(joint_list[direction], stiffness_lists_end, stiff_times, _async=True)

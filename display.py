@@ -15,6 +15,7 @@ class Display(object):
         threading.Thread(target=self.show_image_async).start()
 
     def show_image_async(self):
+		#Gets image form URL, displays for 10 seconds
         self.tabletService.setBrightness(1)
         self.tabletService.showImage("https://www.bristolairport.co.uk/~/media/images/brs/pages/at-the-airport/security-liquids-v2.ashx?h=418&w=400&la=en&hash=30A47A77FD953CE417F687833D2BA1FB8378714B")
         time.sleep(10)

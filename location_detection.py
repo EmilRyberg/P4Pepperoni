@@ -18,6 +18,7 @@ class LocationDetection:
     #Function to classify image on trained CNN    
     def classify_image(self, image):
         with self.graph.as_default():
+			#Takes image and resizes it, put into array, and predicts
             pil_img = Image.fromarray(image, 'RGB')
             img = pil_img.resize((self.IMGWIDTH,self.IMGHEIGHT))
             img_array = np.array(img)

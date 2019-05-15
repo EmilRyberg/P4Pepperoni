@@ -19,7 +19,7 @@ class ObjectDetection:
     def predict_certainties(self, image):
         with self.graph.as_default():
             img = Image.fromarray(image, 'RGB')
-
+			#Resizes image, into array, predicts
             img = img.resize((200,200))
             img_array = np.array(img)
             #cv2.imshow("Resized", img_array)

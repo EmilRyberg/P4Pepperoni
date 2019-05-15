@@ -12,7 +12,6 @@ import random
 
 SPEECH_TRESHOLD = 0.3
 
-# Speech recognition
 class SpeechRecognition(object):
     session=None
 
@@ -73,8 +72,10 @@ class SpeechRecognition(object):
 
     def listen(self):
         self.asr.pause(False)
+		
+		#Buffer that where the data from ALMemory will be stored
         asr_listen=None
-
+		
         question=None
         location=None
 
@@ -84,7 +85,9 @@ class SpeechRecognition(object):
 
 
         print "[INFO] Speech recognition is running"
-
+		
+		#Tries to bruteforce cleaning the ALMemory for WordRecognized
+		#Used to keep the first element in the array as the latest word recognized
         temp = time.time()
         for i in range (20):
             try:
@@ -93,7 +96,9 @@ class SpeechRecognition(object):
                 continue
         print "Wordrecognized clear took %s seconds" % (time.time()-temp)
 
-	    #Loop that breaks when asr_listen is not empty, otherwise it ends after 10 sec
+	    #Loop that checks every 2 seconds if a word has been recognised
+		#If no word, then it checks for 10 seconds
+		#Data from ALMemory is saved to the asr_listen buffer
         success = False
         i = 5
         while i > 0:
@@ -116,6 +121,8 @@ class SpeechRecognition(object):
         self.asr.pause(True)
 
 	    #If else statement that writes question and local to the corrosponding scenario
+		#question and location are returned as strings
+		#<...> is speech that Pepper interprets as garbage bacause it is not in the vocab
         if asr_listen != None and asr_listen != 'hello':
             print asr_listen
             if asr_listen[0] == '<...> stairs <...>' or asr_listen[0] =='stairs <...>' or asr_listen[0]=='<...> stairs':
