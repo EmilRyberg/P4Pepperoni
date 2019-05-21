@@ -8,8 +8,6 @@ class LocationDetection:
     #Desired image sizes used by ImageDataGenerator under training
     IMGWIDTH = 128
     IMGHEIGHT = 96
-    trained_cnn = None
-    graph = None
      
     def __init__(self, model_path):
         self.trained_cnn = load_model(model_path)

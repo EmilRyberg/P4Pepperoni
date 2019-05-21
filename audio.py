@@ -13,7 +13,6 @@ import random
 SPEECH_TRESHOLD = 0.3 #certainty threshold
 
 class SpeechRecognition(object):
-    session=None
 
     def __init__(self,session, ip, port, proxy):
         self.session=session

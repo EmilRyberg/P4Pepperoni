@@ -6,8 +6,6 @@ import numpy as np
 import tensorflow as tf
 
 class ObjectDetection:
-    model = None
-    graph = None
     def __init__(self, model_file_path):
         self.model = models.load_model(model_file_path)
         self.graph = tf.get_default_graph()
