@@ -96,7 +96,7 @@ class LocalisationCNN:
     #Function for testing the trained CNN  
     def test_cnn(self):
         from sklearn.metrics import confusion_matrix
-        self.trained_cnn = load_model('localisation_cnn.h5')
+        self.trained_cnn = load_model('localisation_cnn_shrinkinglayers.h5')
         test_datagen = ImageDataGenerator(rescale = 1./255)
         test_set = test_datagen.flow_from_directory('dataset/test_set',
                                         target_size = (self.IMGHEIGHT, self.IMGWIDTH),
@@ -125,7 +125,7 @@ class LocalisationCNN:
                     if (value == prediction):
                         prediction_class_name = key
                         break
-                print(prediction_class_name)
+               # print(prediction_class_name)
             if (is_first_iter):
                 y_true = y_batch.argmax(axis=1)
                 y_predicted = y_batch_predicted
@@ -142,9 +142,63 @@ class LocalisationCNN:
         print("Class labels: ", test_set.class_indices)
         global confusion_m
         confusion_m = confusion_matrix(y_true, y_predicted)
+        
+        class_array = []
+        for key, value in test_set.class_indices.items():
+            name_with_spaces = ''
+            name_index = 0
+            for c in key:            
+                if c.isupper() and name_index != 0:
+                    name_with_spaces += ' ' + c
+                else:
+                    name_with_spaces += c
+                name_index += 1
+            class_array.append(name_with_spaces)
+            
+        self.plot_confusion_matrix(confusion_m, class_array)
+        
+    def plot_confusion_matrix(self, cm, classes):
+        title = 'Localisation confusion matrix'
+        # Only use the labels that appear in the data
+        #classes = classes[unique_labels(y_true, y_pred)]
+        normalize = True
+        if normalize:
+            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+            print("Normalized confusion matrix")
+        else:
+            print('Confusion matrix, without normalization')
+    
+        print(cm)
+    
+        fig, ax = plt.subplots(figsize=(9.6, 6.9))
+        im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.GnBu)
+        ax.figure.colorbar(im, ax=ax)
+        # We want to show all ticks...
+        ax.set(xticks=np.arange(cm.shape[1]),
+               yticks=np.arange(cm.shape[0]),
+               # ... and label them with the respective list entries
+               xticklabels=classes, yticklabels=classes,
+               title=title,
+               ylabel='True label',
+               xlabel='Predicted label')
+    
+        # Rotate the tick labels and set their alignment.
+        plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+                 rotation_mode="anchor")
+    
+        # Loop over data dimensions and create text annotations.
+        fmt = '.3f' if normalize else 'd'
+        thresh = cm.max() / 2.
+        for i in range(cm.shape[0]):
+            for j in range(cm.shape[1]):
+                ax.text(j, i, format(cm[i, j], fmt),
+                        ha="center", va="center",
+                        color="white" if cm[i, j] > thresh else "black")
+        fig.tight_layout()
+        fig.savefig("confusion_matrix.pdf")
+        return ax
 
-
-LocalisationCNN = LocalisationCNN()
-LocalisationCNN.train_cnn(32, 8)
-#ocalisationCNN.test_cnn()
+localisationCNN = LocalisationCNN()
+#localisationCNN.train_cnn(32, 8)
+localisationCNN.test_cnn()
  

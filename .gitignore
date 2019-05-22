@@ -14,3 +14,7 @@
 object_detection_model\.hdf5
 
 localisation_cnn\.h5
+
+securityCNN/object_detection_confusion_matrix\.pdf
+
+LocalisationCNN/localisation_confusion_matrix\.pdf

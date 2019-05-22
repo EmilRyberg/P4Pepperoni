@@ -134,7 +134,7 @@ def view_training_images():
         break
 
 
-def test_model(load_model_from_file = False, model_name = None):
+def test_model(load_model_from_file = False, model_name = None, show_images = False):
     if (load_model_from_file):
         classifier = load_model(model_name)
     y_true = None
@@ -163,7 +163,7 @@ def test_model(load_model_from_file = False, model_name = None):
                 elif (value == y_batch[i].argmax()):
                     true_class_name = key
                     
-            if (prediction != y_batch[i].argmax()):
+            if (prediction != y_batch[i].argmax() and show_images):
                 plt.imshow(X_batch[i])
                 plt.title("P: {0}, T: {1}".format(prediction_class_name, true_class_name))
                 plt.show()
@@ -182,8 +182,63 @@ def test_model(load_model_from_file = False, model_name = None):
     accuracy = 1. - (incorrect_predictions / images_predicted)
     print ('Class labels: ', test_set.class_indices)
     print ('Test accuracy: {0} ({1}/{2})'.format(accuracy, incorrect_predictions, images_predicted))
+    
+    class_array = []
+    for key, value in test_set.class_indices.items():
+        name_with_spaces = ''
+        name_index = 0
+        for c in key:
+            if c.isupper() and name_index != 0:
+                name_with_spaces += ' ' + c
+            else:
+                name_with_spaces += c
+            name_index += 1
+        class_array.append(name_with_spaces)
+    
     global confusion_m
     confusion_m = confusion_matrix(y_true, y_predicted)
+    plot_confusion_matrix(confusion_m, class_array)
+
+def plot_confusion_matrix(cm, classes):
+    title = 'Object Detection confusion matrix'
+    # Only use the labels that appear in the data
+    #classes = classes[unique_labels(y_true, y_pred)]
+    normalize = True
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+
+    print(cm)
+
+    fig, ax = plt.subplots(figsize=(12.8, 9.2))
+    im = ax.imshow(cm, interpolation='nearest', cmap=plt.cm.GnBu)
+    ax.figure.colorbar(im, ax=ax)
+    # We want to show all ticks...
+    ax.set(xticks=np.arange(cm.shape[1]),
+           yticks=np.arange(cm.shape[0]),
+           # ... and label them with the respective list entries
+           xticklabels=classes, yticklabels=classes,
+           title=title,
+           ylabel='True label',
+           xlabel='Predicted label')
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+             rotation_mode="anchor")
+
+    # Loop over data dimensions and create text annotations.
+    fmt = '.3f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, format(cm[i, j], fmt),
+                    ha="center", va="center",
+                    color="white" if cm[i, j] > thresh else "black")
+    fig.tight_layout()
+    fig.savefig("confusion_matrix.pdf")
+    return ax
 
 def main():
 	#Uncomment either function to test or train model
