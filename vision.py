@@ -6,11 +6,6 @@ import atexit
 import random
 
 class Vision:
-    session = None
-    localisation_cnn = None
-    object_detection = None
-    vid_service = None
-    capture_device = None
     subscribeId = "vision" + str(random.randint(1,100000))
 
     def __init__(self, session):

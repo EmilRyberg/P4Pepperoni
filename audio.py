@@ -10,10 +10,9 @@ import atexit
 import inspect
 import random
 
-SPEECH_TRESHOLD = 0.3
+SPEECH_TRESHOLD = 0.3 #certainty threshold
 
 class SpeechRecognition(object):
-    session=None
 
     def __init__(self,session, ip, port, proxy):
         self.session=session
@@ -30,7 +29,7 @@ class SpeechRecognition(object):
 
         print "INIT AUDIO"
         atexit.register(self.exit_handler)
-        self.random_id = None
+        self.random_id = None #subscribe id, random to avoid conflitcs on separate runs
 
         #Speech recognition configurations
         self.asr.pause(True)
@@ -43,6 +42,7 @@ class SpeechRecognition(object):
         vocabulary_file = open("vocabulary", "r")
         vocabulary = vocabulary_file.read().split(',')
         success = False
+        #try to set vocabulary. cycles autonomous life it it fails
         for i in range(0,2):
             try:
                 self.asr.setVocabulary(vocabulary, True)
@@ -61,7 +61,7 @@ class SpeechRecognition(object):
             else:
                 success = True
                 break
-        if not success:
+        if not success: #if it fails after 2 tries, exit program
             print "[FATAL] Couldn't set vocabulary"
             for i in range(3):
                 self.beep.playSine(440, 60, 0, 0.1)
@@ -82,7 +82,6 @@ class SpeechRecognition(object):
         self.random_id = "speech" + str(random.randint(0,100000))
         #Start the speech recognition engine
         self.asr.subscribe(self.random_id)
-
 
         print "[INFO] Speech recognition is running"
 		
@@ -107,7 +106,7 @@ class SpeechRecognition(object):
             try:
                 asr_listen = self.proxy.getData("WordRecognized")
             except Exception as e:
-                print "[WARNING] Could not read WordRecognized"
+                print "[WARNING] Could not read WordRecognized" #means nothing was recognized yet
             else:
                 if asr_listen != None and asr_listen[0] != 'Pepper' and asr_listen[0] != '' and asr_listen[1] > SPEECH_TRESHOLD and asr_listen != 'hello':
                     success = True
@@ -117,10 +116,10 @@ class SpeechRecognition(object):
                         print "[WARNING] Could not clear WordRecognized"
                     break
 
-        self.asr.unsubscribe(self.random_id)
+        self.asr.unsubscribe(self.random_id) #stop engine after done
         self.asr.pause(True)
 
-	    #If else statement that writes question and local to the corrosponding scenario
+	    #If else statement that writes question and location to the corresponding scenario
 		#question and location are returned as strings
 		#<...> is speech that Pepper interprets as garbage bacause it is not in the vocab
         if asr_listen != None and asr_listen != 'hello':
