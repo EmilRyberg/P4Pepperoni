@@ -18,9 +18,9 @@ class LocalisationCNN:
     trained_cnn = None
     graph = None
      
-    #def __init__(self, model_path):
-        #self.trained_cnn = load_model(model_path)
-        #self.graph = tf.get_default_graph()
+    def __init__(self, model_path):
+        self.trained_cnn = load_model(model_path)
+        self.graph = tf.get_default_graph()
       
     # Building the CNN
     def build_cnn(self, ImgWidth, ImgHeight):
@@ -199,6 +199,6 @@ class LocalisationCNN:
         return ax
 
 localisationCNN = LocalisationCNN()
-#localisationCNN.train_cnn(32, 8)
+localisationCNN.train_cnn(32, 8)
 localisationCNN.test_cnn()
  
