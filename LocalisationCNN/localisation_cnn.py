@@ -39,9 +39,9 @@ class LocalisationCNN:
         cnn.add(Flatten())
       
         #Fully connected layers
-        cnn.add(Dense(256, activation='relu'))
-        cnn.add(Dense(256, activation='relu'))
-        cnn.add(Dense(256, activation='relu'))
+        cnn.add(Dense(64, activation='relu'))
+        cnn.add(Dense(32, activation='relu'))
+        cnn.add(Dense(16, activation='relu'))
         cnn.add(Dense(units = 6, activation = 'softmax'))
         
         #Compiling the CNN
